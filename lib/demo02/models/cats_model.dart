@@ -108,14 +108,14 @@ class Owner {
 List<Owner> owners = [
   Owner(
     name: 'Sophia',
-    image: 'assets/pets-image/woman-with-cat1.png',
+    image: 'assets/demo02/woman-with-cat1.png',
   ),
   Owner(
     name: 'Annie',
-    image: 'assets/pets-image//woman-with-cat2.png',
+    image: 'assets/demo02/woman-with-cat2.png',
   ),
   Owner(
     name: 'Jessica',
-    image: 'assets/pets-image/woman-with-cat3.png',
+    image: 'assets/demo02/woman-with-cat3.png',
   ),
 ];

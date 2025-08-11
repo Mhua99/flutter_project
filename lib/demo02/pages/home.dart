@@ -469,9 +469,12 @@ class _HomePageState extends State<HomePage> {
                 Positioned(
                   bottom: -10,
                   right: 10,
-                  child: Image.asset(
-                    cat.image,
-                    height: size.height * 0.23,
+                  child: Hero(
+                    tag: cat.image,
+                    child: Image.asset(
+                      cat.image,
+                      height: size.height * 0.23,
+                    ),
                   ),
                 ),
                 Padding(
