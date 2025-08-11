@@ -47,6 +47,7 @@ class _HomePageState extends State<HomePage> {
             SizedBox(height: 10,),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.only(right: 20),
               child: Row(
                 children: List.generate(cats.length, (index) {
                   final cat = cats[index];
@@ -61,6 +62,7 @@ class _HomePageState extends State<HomePage> {
         height: 60,
         color: Colors.white,
         child: Row(
+          // MainAxisAlignment.spaceEvenly 所有间距相等
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(icons.length, (index) => GestureDetector(
               onTap: () {},
@@ -69,6 +71,7 @@ class _HomePageState extends State<HomePage> {
                 width: 50,
                 padding: const EdgeInsets.all(5),
                 child: Stack(
+                  // 允许子组件（通知徽章）超出父组件边界显示，实现徽章部分悬空的效果。
                   clipBehavior: Clip.none,
                   children: [
                     Column(
@@ -78,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                           size: 30,
                           color: selectedIndex == index
                               ? blue
-                              : black.withOpacity(0.6),
+                              : black.withAlpha(130),
                         ),
                         const SizedBox(height: 5),
                         selectedIndex == index
@@ -86,6 +89,7 @@ class _HomePageState extends State<HomePage> {
                           height: 5,
                           width: 5,
                           decoration: const BoxDecoration(
+                            // 将容器形状设置为圆形
                             shape: BoxShape.circle,
                             color: blue,
                           ),
@@ -125,6 +129,7 @@ class _HomePageState extends State<HomePage> {
 
   Padding _getBanner(){
     return Padding(
+      // x 轴的padding 为 20
       padding: EdgeInsets.symmetric(horizontal: 20),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
@@ -174,7 +179,7 @@ class _HomePageState extends State<HomePage> {
                   )
               ),
               Positioned(
-                bottom: 0,
+                bottom: 2,
                 right: 20,
                 child: Image.asset(
                   "assets/demo02/cat1.png",
@@ -189,9 +194,10 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Text(
                       "Join Our Animal \n Lovers Community",
+                      // TextStyle 的 height 属性是用来控制文本行高的，具体解释如下
                       style: TextStyle(
                           fontSize: 18,
-                          height: 1.1,
+                          height: 1.2,
                           color: Colors.white,
                           fontWeight: FontWeight.bold
                       ),
@@ -229,7 +235,8 @@ class _HomePageState extends State<HomePage> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          // x 轴 设置内边距 20
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
               Text(
@@ -270,38 +277,41 @@ class _HomePageState extends State<HomePage> {
                       ]
                   )
               ),
+              // 占据剩余空间：在 Row、Column 或 Flex 布局中自动占据所有可用的剩余空间
               Spacer(),
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Color.fromRGBO(0, 0, 0, 0.03),
+                decoration: const BoxDecoration(
+                  // 背景颜色
+                  color: Color.fromRGBO(0, 0, 0, 0.05),
                 ),
                 child: Icon(Icons.search),
               ),
-              SizedBox(width: 10,),
-              // Spacer 占据剩余所有空间
+              // SizedBox(width: 10,),
               Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Color.fromRGBO(0, 0, 0, 0.03),
-                  ),
-                  child: Stack(
-                    children: [
-                      Icon(Icons.notifications_outlined),
-                      Positioned(
-                          right: 3,
-                          top: 3,
-                          child: Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.red
-                            ),
-                          )
-                      )
-                    ],
-                  )
+                margin: EdgeInsets.only(left: 10),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Color.fromRGBO(0, 0, 0, 0.05),
+                ),
+                child: Stack(
+                  children: [
+                    Icon(Icons.notifications_outlined),
+                    Positioned(
+                        right: 3,
+                        top: 3,
+                        child: Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            // 红色圆点
+                            shape: BoxShape.circle,
+                            color: Colors.red
+                          ),
+                        )
+                    )
+                  ],
+                )
               )
             ],
           ),
@@ -335,7 +345,7 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(width: 10,),
               Container(
-                padding: EdgeInsetsDirectional.all(3),
+                padding: EdgeInsets.all(3),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: Colors.amber
@@ -354,51 +364,57 @@ class _HomePageState extends State<HomePage> {
   }
 
   SingleChildScrollView _getCategoryItem(){
+    // SingleChildScrollView 是 Flutter 提供的一个可以滚动单个子组件的 Widget。当内容超出父容器的边界时，用户可以通过滑动来查看完整内容。
     return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            SizedBox(width: 20,),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 18),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Color.fromRGBO(0, 0, 0, 0.03),
-              ),
-              child: Icon(
-                Icons.tune_rounded,
-              ),
+      // 横向滚动
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          SizedBox(width: 20,),
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 18
             ),
-            ...List.generate(categories.length, (index) => Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedCategory = index;
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 18
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: selectedCategory == index ? buttonColor : Color.fromRGBO(0, 0, 0, 0.03),
-                  ),
-                  child: Text(
-                    categories[index],
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: selectedCategory == index ? Colors.white : Colors.black,
-                    ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Color.fromRGBO(0, 0, 0, 0.03),
+            ),
+            child: Icon(
+              Icons.tune_rounded,
+            ),
+          ),
+          SizedBox(width: 20,),
+          ...List.generate(categories.length, (index) => Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedCategory = index;
+                });
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 18
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: selectedCategory == index ? buttonColor : Color.fromRGBO(0, 0, 0, 0.03),
+                ),
+                child: Text(
+                  categories[index],
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: selectedCategory == index ? Colors.white : Colors.black,
                   ),
                 ),
               ),
-            ))
-          ],
-        ),
-      );
+            ),
+          ))
+        ],
+      ),
+    );
   }
 
   Padding _petItem(Cat cat, Size size){
@@ -445,6 +461,7 @@ class _HomePageState extends State<HomePage> {
                     child: Image.asset(
                       "assets/demo02/rTnrpap6c.png",
                       color: cat.color,
+                      // 保持宽高比并填满容器，可能裁剪边缘
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -493,13 +510,14 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
+                      // 显示圆形头像或图标
                       CircleAvatar(
                         backgroundColor: Colors.white,
                         child: Icon(
                           cat.fav
                               ? Icons.favorite_rounded
                               : Icons.favorite_outline_rounded,
-                          color: cat.fav ? Colors.red : black.withOpacity(0.6),
+                          color: cat.fav ? Colors.red : black.withAlpha(136),
                         ),
                       ),
                     ],
