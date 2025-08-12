@@ -16,6 +16,9 @@
 # dem06
 <img src="./images/6-1.png" width="30%" />
 
+# dem07
+<img src="./images/7-1.png" width="30%" />
+
 # 常见命令
 ```bash
 # 添加 readmore 依赖包
