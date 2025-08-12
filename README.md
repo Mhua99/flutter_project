@@ -6,7 +6,14 @@
 <img src="./images/2-2.png" width="30%" />
 <img src="./images/2-3.png" width="30%" />
 
-# 添加第三方依赖包
+# dem03
+<img src="./images/3-1.png" width="30%" />
+
+# 常见命令
 ```bash
+# 添加 readmore 依赖包
 flutter pub add readmore
+
+# android studio 格式化代码
+Ctrl + Alt + L
 ```
