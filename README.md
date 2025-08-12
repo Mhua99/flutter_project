@@ -2,12 +2,13 @@
 <img src="./images/1-1.png" width="30%" />
 
 # dem02
-<img src="./images/2-1.png" width="30%" />
-<img src="./images/2-2.png" width="30%" />
-<img src="./images/2-3.png" width="30%" />
+<img src="./images/2-1.png" width="30%" /><img src="./images/2-2.png" width="30%" /><img src="./images/2-3.png" width="30%" />
 
 # dem03
 <img src="./images/3-1.png" width="30%" />
+
+# dem04
+<img src="./images/4-1.png" width="30%" />
 
 # 常见命令
 ```bash
