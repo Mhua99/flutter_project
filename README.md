@@ -31,6 +31,9 @@
 # dem11
 <img src="./images/11-1.png" width="30%" />
 
+# dem12
+<img src="./images/12-1.png" width="30%" />
+
 
 # 常见命令
 ```bash
