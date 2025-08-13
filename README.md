@@ -26,13 +26,24 @@
 <img src="./images/9-1.png" width="30%" />
 
 # dem10
+* 路由跳转
+
 <img src="./images/10-1.png" width="30%" />
 
 # dem11
+* 路由传参跳转
+
 <img src="./images/11-1.png" width="30%" />
 
 # dem12
+* 拆分路由文件
+
 <img src="./images/12-1.png" width="30%" />
+
+# dem13
+* 清空特定路由
+
+<img src="./images/13-1.png" width="30%" />
 
 
 # 常见命令
