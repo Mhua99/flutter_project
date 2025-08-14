@@ -45,6 +45,11 @@
 
 <img src="./images/13-1.png" width="30%" />
 
+# dem14
+* 弹窗
+
+<img src="./images/14-1.png" width="30%" />
+
 
 # 常见命令
 ```bash
