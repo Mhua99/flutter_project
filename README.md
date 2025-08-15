@@ -70,6 +70,10 @@
 
 <img src="./images/18-1.png" width="30%" />
 
+# dem19
+* AnimatedList 是一个可以为列表项的插入和删除操作添加动画效果的组件
+
+<img src="./images/19-1.png" width="30%" />
 
 
 # 常见命令
