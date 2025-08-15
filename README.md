@@ -65,6 +65,10 @@
 
 <img src="./images/17-1.png" width="30%" />
 
+# dem18
+* 通过 key 获取widget的状态和方法
+
+<img src="./images/18-1.png" width="30%" />
 
 
 
