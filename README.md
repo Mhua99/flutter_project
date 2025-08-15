@@ -55,10 +55,16 @@
 
 <img src="./images/15-1.png" width="30%" />
 
-# dem15
+# dem16
 * pageview 滑动
 
 <img src="./images/16-1.png" width="30%" />
+
+# dem17
+* pageview 自动滑动和组件缓存
+
+<img src="./images/17-1.png" width="30%" />
+
 
 
 
