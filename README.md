@@ -85,6 +85,9 @@
 
 <img src="./images/21-1.png" width="30%" />
 
+# dem22
+<img src="./images/22-1.png" width="30%" />
+
 
 
 # 常见命令
