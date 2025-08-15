@@ -75,6 +75,12 @@
 
 <img src="./images/19-1.png" width="30%" />
 
+# dem20
+* 动画效果内置组件
+
+<img src="./images/20-1.png" width="30%" />
+
+
 
 # 常见命令
 ```bash
