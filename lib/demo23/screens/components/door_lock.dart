@@ -35,11 +35,11 @@ class DoorLock extends StatelessWidget {
             ScaleTransition(scale: animation, child: child),
         child: isLock
             ? SvgPicture.asset(
-                "lib/demo23/assets/icons/door_lock.svg",
+                "assets/demo23/assets/icons/door_lock.svg",
                 key: ValueKey("lock"),
               )
             : SvgPicture.asset(
-                "lib/demo23/assets/icons/door_unlock.svg",
+                "assets/demo23/assets/icons/door_unlock.svg",
                 key: ValueKey("unlock"),
               ),
       ),

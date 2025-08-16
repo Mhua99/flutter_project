@@ -211,7 +211,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           vertical: constrains.maxHeight * 0.1,
                         ),
                         child: SvgPicture.asset(
-                          "lib/demo23/assets/icons/Car.svg",
+                          "assets/demo23/assets/icons/Car.svg",
                           width: double.infinity,
                         ),
                       ),
@@ -287,7 +287,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                        */
                       opacity: _animationBattery.value,
                       child: SvgPicture.asset(
-                        "lib/demo23/assets/icons/Battery.svg",
+                        "assets/demo23/assets/icons/Battery.svg",
                         width: constrains.maxWidth * 0.45,
                       ),
                     ),
@@ -331,12 +331,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         duration: defaultDuration,
                         child: _controller.isCoolSelected
                             ? Image.asset(
-                                "lib/demo23/assets/images/Cool_glow_2.png",
+                                "assets/demo23/assets/images/Cool_glow_2.png",
                                 key: UniqueKey(),
                                 width: 200,
                               )
                             : Image.asset(
-                                "lib/demo23/assets/images/Hot_glow_4.png",
+                                "assets/demo23/assets/images/Hot_glow_4.png",
                                 key: UniqueKey(),
                                 width: 200,
                               ),

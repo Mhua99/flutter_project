@@ -7,22 +7,22 @@ List<Widget> tyres(BoxConstraints constrains) {
     Positioned(
       left: constrains.maxWidth * 0.2,
       top: constrains.maxHeight * 0.22,
-      child: SvgPicture.asset("lib/demo23/assets/icons/FL_Tyre.svg"),
+      child: SvgPicture.asset("assets/demo23/assets/icons/FL_Tyre.svg"),
     ),
     Positioned(
       right: constrains.maxWidth * 0.2,
       top: constrains.maxHeight * 0.22,
-      child: SvgPicture.asset("lib/demo23/assets/icons/FL_Tyre.svg"),
+      child: SvgPicture.asset("assets/demo23/assets/icons/FL_Tyre.svg"),
     ),
     Positioned(
       right: constrains.maxWidth * 0.2,
       top: constrains.maxHeight * 0.63,
-      child: SvgPicture.asset("lib/demo23/assets/icons/FL_Tyre.svg"),
+      child: SvgPicture.asset("assets/demo23/assets/icons/FL_Tyre.svg"),
     ),
     Positioned(
       left: constrains.maxWidth * 0.2,
       top: constrains.maxHeight * 0.63,
-      child: SvgPicture.asset("lib/demo23/assets/icons/FL_Tyre.svg"),
+      child: SvgPicture.asset("assets/demo23/assets/icons/FL_Tyre.svg"),
     ),
   ];
 }
