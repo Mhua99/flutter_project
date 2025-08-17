@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_project/demo25/screens/home.dart';
+import 'package:flutter_project/demo25/screens/splash.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         appBarTheme: AppBarTheme(color: Colors.black87),
       ),
-      home: HomeScreen(),
+      home: SplashScreen(),
     );
   }
 }

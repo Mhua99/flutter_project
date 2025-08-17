@@ -44,6 +44,8 @@ dependencies:
   sqflite_common_ffi: ^2.3.6
   sqlite3_flutter_libs: ^0.5.39
   path_provider: ^2.1.5
+  lottie: ^3.3.1
+  animated_splash_screen: ^1.3.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
@@ -78,7 +80,8 @@ flutter:
      - assets/demo23/assets/icons/
      - assets/demo23/assets/images/
      - assets/demo24/
-     - assets/icon/
+     - assets/demo25/
+     - assets/demo25/animation/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -108,6 +111,6 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icon/logo1.png"
+  image_path: "assets/demo25/logo1.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/icon/logo1.png"
+  adaptive_icon_foreground: "assets/demo25/logo1.png"
