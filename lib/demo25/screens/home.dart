@@ -13,9 +13,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _searchController = TextEditingController();
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   List<Note> _notes = [];
+  List<Note> _notesOrign = [];
 
+  /// 1. HomeScreen initState - 页面初始化
+  /// 2. HomeScreen build - 页面构建
+  /// 3. 跳转其他页面后，HomeScreen 暂停，但不销毁
+  /// 4. 返回上一页 HomeScreen 恢复，但不会重新 build
   @override
   void initState() {
     super.initState();
@@ -25,6 +31,18 @@ class _HomeScreenState extends State<HomeScreen> {
   // 查询数据
   _loadNotes() async {
     final notes = await _databaseHelper.getNotes();
+    setState(() {
+      _notesOrign = notes;
+      _notes = notes;
+    });
+  }
+
+  /// 搜索
+  void _filterNotes() {
+    String keyworkd = _searchController.text.trim();
+    final notes = _notesOrign
+        .where((note) => note.title.contains(keyworkd))
+        .toList();
     setState(() {
       _notes = notes;
     });
@@ -50,84 +68,128 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text("我的记事本", style: TextStyle(color: Colors.white)),
         centerTitle: true,
       ),
-      body: GridView.builder(
-        padding: EdgeInsets.all(16),
-
-        /// 创建了一个2列的网格布局，每个网格项之间有16像素的间距，形成整齐的笔记卡片展示效果。
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          /// 每行显示2列
-          crossAxisCount: 2,
-
-          /// 交叉轴上子元素之间的间距为16像素
-          crossAxisSpacing: 16,
-
-          /// 主轴上子元素之间的间距为16像素
-          mainAxisSpacing: 16,
-        ),
-
-        /// 生成网格数量
-        itemCount: _notes.length,
-        itemBuilder: (context, index) {
-          final note = _notes[index];
-          final color = Color(int.parse(note.color));
-          return GestureDetector(
-            /// 查看笔记
-            onTap: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => ViewsPage(note: note)),
-              );
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    note.title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-
-                    /// 最多显示一行
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    note.content,
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
-
-                    /// 最多显示四行
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Spacer(),
-                  Text(
-                    _formatDateTime(note.dateTime),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+      body: Column(
+        children: [
+          // 搜索框
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: "请输入关键词",
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    // 在这里处理搜索逻辑
+                    print('点击了搜索图标');
+                    _filterNotes();
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.grey[200],
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 16.0,
+                ),
               ),
             ),
-          );
-        },
+          ),
+          _notes.isEmpty
+              ? Expanded(child: Center(child: Text("暂无笔记")))
+              : Expanded(
+                  child: GridView.builder(
+                    padding: EdgeInsets.all(16),
+
+                    /// 创建了一个2列的网格布局，每个网格项之间有16像素的间距，形成整齐的笔记卡片展示效果。
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      /// 每行显示2列
+                      crossAxisCount: 2,
+
+                      /// 交叉轴上子元素之间的间距为16像素
+                      crossAxisSpacing: 16,
+
+                      /// 主轴上子元素之间的间距为16像素
+                      mainAxisSpacing: 16,
+                    ),
+
+                    /// 生成网格数量
+                    itemCount: _notes.length,
+                    itemBuilder: (context, index) {
+                      final note = _notes[index];
+                      final color = Color(int.parse(note.color));
+                      return GestureDetector(
+                        /// 查看笔记
+                        onTap: () async {
+                          final res = await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => ViewsPage(note: note),
+                            ),
+                          );
+                          if (res == true) {
+                            _loadNotes();
+                          }
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                note.title,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+
+                                /// 最多显示一行
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                note.content,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white70,
+                                ),
+
+                                /// 最多显示四行
+                                maxLines: 4,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Spacer(),
+                              Text(
+                                _formatDateTime(note.dateTime),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+        ],
       ),
 
       /// 右下角添加按钮

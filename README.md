@@ -109,4 +109,8 @@ Ctrl + Alt + L
 
 # vscode 快速包裹 子元素
 Ctrl + Shift + R
+
+# 自动生成适配各个平台和设备的图标
+* 需要安装 flutter_launcher_icons 包
+flutter pub run flutter_launcher_icons:main
 ```

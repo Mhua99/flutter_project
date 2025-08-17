@@ -3,11 +3,16 @@ import 'package:flutter_project/demo25/model/notes.dart';
 import 'package:flutter_project/demo25/screens/add_edit.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
 
-class ViewsPage extends StatelessWidget {
-  final Note note;
+class ViewsPage extends StatefulWidget {
+  Note note;
 
   ViewsPage({super.key, required this.note});
 
+  @override
+  State<ViewsPage> createState() => _ViewsPageState();
+}
+
+class _ViewsPageState extends State<ViewsPage> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
 
   String _formatDateTime(String dateTime) {
@@ -21,6 +26,7 @@ class ViewsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Note note = widget.note;
     return Scaffold(
       backgroundColor: Color(int.parse(note.color)),
       appBar: AppBar(
@@ -33,12 +39,17 @@ class ViewsPage extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              await Navigator.push(
+              final res = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddEditScreen(note: note),
                 ),
               );
+              if (res != null) {
+                setState(() {
+                  widget.note = res;
+                });
+              }
             },
             icon: Icon(Icons.edit, color: Colors.white),
           ),
@@ -150,8 +161,8 @@ class ViewsPage extends StatelessWidget {
     );
 
     if (confirm == true) {
-      await _databaseHelper.deleteNote(note.id!);
-      Navigator.pop(context);
+      await _databaseHelper.deleteNote(widget.note.id!);
+      Navigator.pop(context, true);
     }
   }
 }

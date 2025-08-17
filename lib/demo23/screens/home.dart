@@ -180,7 +180,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
               _controller.showTyreController(index);
               _controller.tyreStatusController(index);
-              // Make sure you call it before [onBottomNavigationTabChange]
               _controller.onBottomNavigationTabChange(index);
             },
             // 高亮显示当前选中的 tab

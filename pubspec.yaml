@@ -46,6 +46,7 @@ dependencies:
   path_provider: ^2.1.5
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
 
@@ -77,6 +78,7 @@ flutter:
      - assets/demo23/assets/icons/
      - assets/demo23/assets/images/
      - assets/demo24/
+     - assets/icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -103,3 +105,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/logo1.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/logo1.png"

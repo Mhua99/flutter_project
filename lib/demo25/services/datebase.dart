@@ -1,7 +1,6 @@
 import "package:path/path.dart";
-import "package:sqflite_common_ffi/sqflite_ffi.dart";
+import "package:sqflite/sqflite.dart"; // 改为使用标准 sqflite
 import "package:path_provider/path_provider.dart";
-
 import "../model/notes.dart";
 
 class DatabaseHelper {
@@ -13,8 +12,7 @@ class DatabaseHelper {
   /// 使用 factory 构造函数确保整个应用只有一个数据库实例
   factory DatabaseHelper() => _instance;
 
-  /// 声明命名构造函数，这里是定义，而不是调用
-  /// DatabaseHelper._internal(){};
+  /// 私有的命名构造函数，只能在类内部调用
   DatabaseHelper._internal();
 
   /// 数据库初始化
@@ -25,24 +23,44 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    // 使用应用文档目录确保在所有平台上都有正确的访问权限
-    final directory = await getApplicationDocumentsDirectory();
-    final path = join(directory.path, "my_note.db");
-    return await databaseFactoryFfi.openDatabase(
-      path,
-      options: OpenDatabaseOptions(version: 1, onCreate: _onCreate),
-    );
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final path = join(directory.path, "my_note.db");
+
+      // 确保目录存在
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      return await openDatabase(path, version: 1, onCreate: _onCreate);
+    } catch (e) {
+      print('Database initialization error: $e');
+      rethrow;
+    }
   }
 
   /// 表结构创建
   Future<void> _onCreate(Database db, int version) async {
+    /**
+     * 情况一
+     *  1. my_note.db 文件不存在
+        2. openDatabase 创建新的数据库文件
+        3. 调用 _onCreate 方法创建表结构
+        4. 后续操作都使用这个已创建的数据库
+
+        情况二
+        1. my_note.db 文件已存在
+        2. openDatabase 直接打开现有数据库
+        3. 不会调用 _onCreate
+        4. 表结构已经存在，直接使用
+     */
     await db.execute('''
-        create table notes(
-          id integer primary key autoincrement,
-          title text,
-          content text,
-          color text,
-          dateTime text 
+        CREATE TABLE notes(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT,
+          content TEXT,
+          color TEXT,
+          dateTime TEXT
          )
     ''');
   }
@@ -83,5 +101,12 @@ class DatabaseHelper {
     await db.execute('DROP TABLE IF EXISTS notes');
     // 重新创建表
     await _onCreate(db, 1);
+  }
+
+  /// 关闭数据库连接
+  Future<void> close() async {
+    final db = await database;
+    await db.close();
+    _database = null;
   }
 }

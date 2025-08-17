@@ -17,13 +17,11 @@ class _AddEditScreenState extends State<AddEditScreen> {
   /// 用于调用 form 组件上的方法
   final _formKey = GlobalKey<FormState>();
 
-  /**
-   * TextEditingController
-   * 1. 用于控制 TextField 或 TextFormField 组件的文本内容
-   * 2. 可以读取用户输入的文本
-   * 3. 可以设置文本框的初始值
-   * 4. 可以监听文本变化
-   */
+  /// TextEditingController
+  /// 1. 用于控制 TextField 或 TextFormField 组件的文本内容
+  /// 2. 可以读取用户输入的文本
+  /// 3. 可以设置文本框的初始值
+  /// 4. 可以监听文本变化
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final DatabaseHelper _databaseHelper = DatabaseHelper();
@@ -101,6 +99,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                   ),
                   Padding(
                     padding: EdgeInsets.all(16),
+
                     /// 可滚动组件
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -128,15 +127,13 @@ class _AddEditScreenState extends State<AddEditScreen> {
                       ),
                     ),
                   ),
+
                   /// InkWell 用于给子组件添加点击效果（水波纹效果）和点击交互功能。
                   InkWell(
                     onTap: () async {
                       try {
-                        await _saveNote();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
-                        );
+                        final note = await _saveNote();
+                        Navigator.pop(context, note);
                       } catch (e) {
                         print(e);
                       }
@@ -169,7 +166,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
     );
   }
 
-  Future<void> _saveNote() async {
+  Future<Note> _saveNote() async {
     if (_formKey.currentState!.validate()) {
       /// note 对象创建后不应该改变，使用 final 更符合语义
       final note = Note(
@@ -185,6 +182,8 @@ class _AddEditScreenState extends State<AddEditScreen> {
       } else {
         await _databaseHelper.updateNote(note);
       }
+
+      return note;
     } else {
       throw "请填写标题和内容";
     }
