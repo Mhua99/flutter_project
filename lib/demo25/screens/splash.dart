@@ -14,7 +14,7 @@ class SplashScreen extends StatelessWidget {
         child: Lottie.asset("assets/demo25/animation/bird.json"),
       ),
       nextScreen: HomeScreen(),
-      duration: 3000,
+      duration: 2000,
       backgroundColor: Colors.white,
       splashIconSize: 260,
     );

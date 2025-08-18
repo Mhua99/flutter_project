@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_project/demo25/screens/views.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
@@ -14,6 +16,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode(); // 创建 FocusNode
+
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   List<Note> _notes = [];
   List<Note> _notesOrign = [];
@@ -26,6 +30,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadNotes();
+  }
+
+  @override
+  void dispose() {
+    // 释放资源
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   // 查询数据
@@ -70,30 +82,37 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // 搜索框
+          /// 搜索框
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: "请输入关键词",
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () {
-                    // 在这里处理搜索逻辑
-                    print('点击了搜索图标');
-                    _filterNotes();
-                  },
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.grey[200],
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 16.0,
+            padding: const EdgeInsets.all(8),
+            child: SizedBox(
+              height: 46,
+              child: Align(
+                alignment: Alignment.center,
+                child: TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  autofocus: false,
+                  decoration: InputDecoration(
+                    hintText: "请输入关键词",
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.search),
+                      onPressed: () {
+                        print('点击了搜索图标');
+                        _filterNotes();
+                      },
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 12.0,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -102,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ? Expanded(child: Center(child: Text("暂无笔记")))
               : Expanded(
                   child: GridView.builder(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.fromLTRB(16, 4, 16, 16),
 
                     /// 创建了一个2列的网格布局，每个网格项之间有16像素的间距，形成整齐的笔记卡片展示效果。
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -124,6 +143,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       return GestureDetector(
                         /// 查看笔记
                         onTap: () async {
+                          if (_searchFocusNode.hasFocus) {
+                            /// 取消聚焦
+                            _searchFocusNode.unfocus();
+
+                            /// 等待键盘收起
+                            await Future.any([
+                              /// 等待一小段时间确保键盘收起
+                              Future.delayed(Duration(milliseconds: 300)),
+
+                              /// 设置超时
+                              Future.delayed(Duration(seconds: 1)),
+                            ]);
+                          }
+
                           final res = await Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => ViewsPage(note: note),
