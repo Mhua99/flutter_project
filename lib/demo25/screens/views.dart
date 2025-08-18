@@ -4,15 +4,16 @@ import 'package:flutter_project/demo25/screens/add_edit.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
 
 class ViewsPage extends StatefulWidget {
-  Note note;
+  final Note note;
 
-  ViewsPage({super.key, required this.note});
+  const ViewsPage({super.key, required this.note});
 
   @override
   State<ViewsPage> createState() => _ViewsPageState();
 }
 
 class _ViewsPageState extends State<ViewsPage> {
+  late Note _currentNote;
   final DatabaseHelper _databaseHelper = DatabaseHelper();
 
   String _formatDateTime(String dateTime) {
@@ -21,16 +22,21 @@ class _ViewsPageState extends State<ViewsPage> {
     if (dt.year == now.year && dt.month == now.month && dt.day == now.day) {
       return "今天，${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
     }
-    return "${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+    return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _currentNote = widget.note; // 初始化局部变量
   }
 
   @override
   Widget build(BuildContext context) {
-    Note note = widget.note;
     return Scaffold(
-      backgroundColor: Color(int.parse(note.color)),
+      backgroundColor: Color(int.parse(_currentNote.color)),
       appBar: AppBar(
-        backgroundColor: Color(int.parse(note.color)),
+        backgroundColor: Color(int.parse(_currentNote.color)),
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
@@ -42,12 +48,12 @@ class _ViewsPageState extends State<ViewsPage> {
               final res = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddEditScreen(note: note),
+                  builder: (context) => AddEditScreen(note: _currentNote),
                 ),
               );
               if (res != null) {
                 setState(() {
-                  widget.note = res;
+                  _currentNote = res;
                 });
               }
             },
@@ -69,7 +75,7 @@ class _ViewsPageState extends State<ViewsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    note.title,
+                    _currentNote.title,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -82,7 +88,7 @@ class _ViewsPageState extends State<ViewsPage> {
                       Icon(Icons.access_time, size: 16, color: Colors.white),
                       SizedBox(width: 8),
                       Text(
-                        _formatDateTime(note.dateTime),
+                        _formatDateTime(_currentNote.dateTime),
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white,
@@ -108,7 +114,7 @@ class _ViewsPageState extends State<ViewsPage> {
                 child: SingleChildScrollView(
                   physics: BouncingScrollPhysics(),
                   child: Text(
-                    note.content,
+                    _currentNote.content,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.black.withAlpha(204),

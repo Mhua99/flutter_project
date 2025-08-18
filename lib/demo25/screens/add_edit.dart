@@ -25,16 +25,16 @@ class _AddEditScreenState extends State<AddEditScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final DatabaseHelper _databaseHelper = DatabaseHelper();
-  Color _selectedColor = Colors.amber;
+  Color _selectedColor = Color(0xFFFFD700);
 
   final List<Color> _colors = [
-    Colors.amber,
+    Color(0xFFFFD700),
     Color(0xFF50C878),
-    Colors.redAccent,
-    Colors.blueAccent,
-    Colors.indigo,
-    Colors.purpleAccent,
-    Colors.pinkAccent,
+    Color(0xFFFF5252),
+    Color(0xFF448AFF),
+    Color(0xFF3F51B5),
+    Color(0xFFE040FB),
+    Color(0xFFF50057),
   ];
 
   @override
@@ -115,7 +115,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                                 color: color,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: _selectedColor == color
+                                  color: _selectedColor.value == color.value
                                       ? Colors.black45
                                       : Colors.transparent,
                                   width: 2,
