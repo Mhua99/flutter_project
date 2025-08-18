@@ -6,7 +6,7 @@ import 'package:flutter_project/demo25/services/datebase.dart';
 
 import '../model/notes.dart';
 import '../utils/date.dart';
-import 'add_edit.dart';
+import 'note_add_edit.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // 查询数据
+  /// 查询数据
   _loadNotes({bool isRefresh = false}) async {
     setState(() {
       !isRefresh && (_isLoading = true);
@@ -61,7 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
         title: title == '' ? null : title,
         page: _page,
       );
-      // 添加1秒延时后再更新UI
+
+      /// 添加1秒延时后再更新UI
       await Future.delayed(Duration(seconds: 1));
 
       setState(() {
@@ -79,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 下拉刷新方法
+  /// 下拉刷新方法
   Future<void> _refreshNotes() async {
     _page = 1;
     _notes = [];
@@ -87,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await _loadNotes(isRefresh: true);
   }
 
-  // 加载更多数据
+  /// 加载更多数据
   void _loadMoreNotes() {
     if (_isHasMore) {
       _page++;
@@ -119,7 +120,8 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               /// 搜索框
               _searchInput(),
-              // 分类
+
+              /// 分类
               _getCategory(),
               SizedBox(height: 8),
               if (_notes.isEmpty && !_isLoading)
@@ -136,11 +138,16 @@ class _HomeScreenState extends State<HomeScreen> {
       /// 右下角添加按钮
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.push(
+          final res = await Navigator.push(
             context,
             MaterialPageRoute(builder: (content) => AddEditScreen()),
           );
-          _loadNotes();
+          if (res is Note) {
+            _page = 1;
+            _notes = [];
+            _isHasMore = true;
+            _loadNotes();
+          }
         },
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
@@ -151,21 +158,57 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Expanded _getContent() {
     return Expanded(
+      /// RefreshIndicator 下拉刷新
       child: RefreshIndicator(
         // strokeWidth: 0.01,
         // color: Colors.transparent, // 设置颜色为透明
         // backgroundColor: Colors.transparent, // 设置背景为透明
         // // 设置位移使其不在可视区域
         // edgeOffset: 900,
-        onRefresh: _refreshNotes, // 设置刷新回调方法
+        onRefresh: _refreshNotes,
+        // 设置刷新回调方法
+        /// NotificationListener 是一个 Widget，用于监听从子组件树中冒泡上来的通知。它允许你在通知冒泡过程中捕获并处理这些通知
         child: NotificationListener(
           onNotification: (ScrollNotification notification) {
             // 监听滚动事件，实现上拉加载
-            if (notification is ScrollEndNotification && _isHasMore) {
+            if (notification is ScrollEndNotification) {
               final metrics = notification.metrics;
 
-              if (metrics.pixels == metrics.maxScrollExtent) {
+              if (metrics.pixels == metrics.maxScrollExtent && _isHasMore) {
                 _loadMoreNotes();
+
+                /// 通知被消费，停止传递
+                return true;
+              } else if (metrics.pixels == metrics.maxScrollExtent &&
+                  !_isHasMore) {
+                // 使用 SnackBar 提示
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.info, color: Colors.white, size: 20),
+                        SizedBox(width: 10),
+                        Text(
+                          "数据已全部加载完毕",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    duration: Duration(seconds: 1),
+                    backgroundColor: Colors.black54,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    margin: EdgeInsets.fromLTRB(100, 0, 100, 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    /// elevation 属性定义了组件相对于其父组件的z轴高度，值越大组件看起来越"浮"在屏幕上，阴影也越明显。
+                    elevation: 6,
+                  ),
+                );
                 return true;
               }
             }

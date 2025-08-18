@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_project/demo25/model/notes.dart';
-import 'package:flutter_project/demo25/screens/add_edit.dart';
+import 'package:flutter_project/demo25/screens/note_add_edit.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
 
 import '../utils/date.dart';
@@ -78,14 +78,30 @@ class _ViewsPageState extends State<ViewsPage> {
                   SizedBox(height: 12),
                   Row(
                     children: [
-                      Icon(Icons.access_time, size: 16, color: Colors.white),
-                      SizedBox(width: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            DateFormat.formatDateTime(_currentNote.dateTime),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Spacer(),
                       Text(
-                        DateFormat.formatDateTime(_currentNote.dateTime),
+                        _currentNote.category,
                         style: TextStyle(
-                          fontSize: 14,
                           color: Colors.white,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
