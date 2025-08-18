@@ -3,6 +3,8 @@ import 'package:flutter_project/demo25/model/notes.dart';
 import 'package:flutter_project/demo25/screens/add_edit.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
 
+import '../utils/date.dart';
+
 class ViewsPage extends StatefulWidget {
   final Note note;
 
@@ -15,15 +17,6 @@ class ViewsPage extends StatefulWidget {
 class _ViewsPageState extends State<ViewsPage> {
   late Note _currentNote;
   final DatabaseHelper _databaseHelper = DatabaseHelper();
-
-  String _formatDateTime(String dateTime) {
-    final DateTime dt = DateTime.parse(dateTime);
-    final now = DateTime.now();
-    if (dt.year == now.year && dt.month == now.month && dt.day == now.day) {
-      return "今天，${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
-    }
-    return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
-  }
 
   @override
   void initState() {
@@ -88,7 +81,7 @@ class _ViewsPageState extends State<ViewsPage> {
                       Icon(Icons.access_time, size: 16, color: Colors.white),
                       SizedBox(width: 8),
                       Text(
-                        _formatDateTime(_currentNote.dateTime),
+                        DateFormat.formatDateTime(_currentNote.dateTime),
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white,

@@ -2,6 +2,7 @@ import "package:path/path.dart";
 import "package:sqflite/sqflite.dart"; // 改为使用标准 sqflite
 import "package:path_provider/path_provider.dart";
 import "../model/notes.dart";
+import "../model/result.dart";
 
 class DatabaseHelper {
   /// 创建一个唯一的 DatabaseHelper 实例
@@ -57,6 +58,7 @@ class DatabaseHelper {
     await db.execute('''
         CREATE TABLE notes(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category TEXT,
           title TEXT,
           content TEXT,
           color TEXT,
@@ -87,6 +89,54 @@ class DatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('notes');
     return List.generate(maps.length, (i) => Note.fromMap(maps[i]));
+  }
+
+  /// 分页查询数据并返回总数
+  Future<Result<Note>> getNotesWithCount({
+    String? category,
+    String? title,
+    required int page,
+    int pageSize = 10,
+  }) async {
+    final db = await database;
+
+    // 计算偏移量
+    int offset = (page - 1) * pageSize;
+
+    // 构建查询条件
+    String? whereClause;
+    List<Object?> whereArgs = [];
+
+    if (category != null && title != null) {
+      whereClause = 'category = ? AND title LIKE ?';
+      whereArgs = [category, '%$title%'];
+    } else if (category != null) {
+      whereClause = 'category = ?';
+      whereArgs = [category];
+    } else if (title != null) {
+      whereClause = 'title LIKE ?';
+      whereArgs = ['%$title%'];
+    }
+
+    // 查询当前页的数据
+    final List<Map<String, dynamic>> maps = await db.query(
+      'notes',
+      where: whereClause,
+      whereArgs: whereArgs,
+      limit: pageSize,
+      offset: offset,
+    );
+
+    // 查询总数量
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM notes ${whereClause != null ? "WHERE $whereClause" : ""}',
+      whereArgs,
+    );
+
+
+    final totalCount = result.first['count'] as int;
+    final notes = List.generate(maps.length, (i) => Note.fromMap(maps[i]));
+    return Result(notes: notes, totalCount: totalCount);
   }
 
   /// 删除数据

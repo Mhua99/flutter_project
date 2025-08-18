@@ -25,13 +25,17 @@ class _AddEditScreenState extends State<AddEditScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final DatabaseHelper _databaseHelper = DatabaseHelper();
-  Color _selectedColor = Color(0xFFFFD700);
+  Color _selectedColor = Color(0xFF448AFF);
+
+  // 添加类型字段
+  String _selectedCategory = 'js'; // 默认类型
+  final List<String> _categories = ['js', 'html', 'vue', 'other'];
 
   final List<Color> _colors = [
+    Color(0xFF448AFF),
     Color(0xFFFFD700),
     Color(0xFF50C878),
     Color(0xFFFF5252),
-    Color(0xFF448AFF),
     Color(0xFF3F51B5),
     Color(0xFFE040FB),
     Color(0xFFF50057),
@@ -46,6 +50,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
       _titleController.text = widget.note!.title;
       _contentController.text = widget.note!.content;
       _selectedColor = Color(int.parse(widget.note!.color));
+      _selectedCategory = widget.note!.category ?? 'js';
     }
   }
 
@@ -59,7 +64,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
       ),
       body: Form(
         key: _formKey,
-        child: Column(
+        child: ListView(
           children: [
             Padding(
               padding: EdgeInsets.all(16),
@@ -80,7 +85,34 @@ class _AddEditScreenState extends State<AddEditScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 16),
+                  // 添加类型选择区域 - 使用Radio组件
+                  Row(
+                    children: _categories.map((category) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = category;
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Radio<String>(
+                              value: category,
+                              groupValue: _selectedCategory,
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedCategory = value!;
+                                });
+                              },
+                            ),
+                            Text(category),
+                            SizedBox(width: 16),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
                   TextFormField(
                     controller: _contentController,
                     decoration: InputDecoration(
@@ -101,30 +133,29 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     padding: EdgeInsets.all(16),
 
                     /// 可滚动组件
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: _colors.map((color) {
-                          return GestureDetector(
-                            onTap: () => setState(() => _selectedColor = color),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              margin: EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: _selectedColor.value == color.value
-                                      ? Colors.black45
-                                      : Colors.transparent,
-                                  width: 2,
-                                ),
+                    child: Row(
+                      children: _colors.map((color) {
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedColor = color),
+                          child: Container(
+                            // 屏幕宽度的12%
+                            width: MediaQuery.of(context).size.width * 0.10,
+                            // 保持正方形
+                            height: MediaQuery.of(context).size.width * 0.10,
+                            margin: EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: _selectedColor.value == color.value
+                                    ? Colors.black45
+                                    : Colors.transparent,
+                                width: 2,
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
 
@@ -175,6 +206,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
         content: _contentController.text,
         color: _selectedColor.value.toString(),
         dateTime: DateTime.now().toString(),
+        category: _selectedCategory,
       );
 
       if (widget.note == null) {

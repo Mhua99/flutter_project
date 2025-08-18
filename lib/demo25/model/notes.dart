@@ -4,6 +4,7 @@ class Note {
   final String content;
   final String color;
   final String dateTime;
+  final String category;
 
   Note({
     this.id,
@@ -11,6 +12,7 @@ class Note {
     required this.content,
     required this.color,
     required this.dateTime,
+    required this.category,
   });
 
   /**
@@ -25,6 +27,7 @@ class Note {
       'content': content,
       'color': color,
       'dateTime': dateTime,
+      'category': category,
     };
   }
 
@@ -40,6 +43,7 @@ class Note {
       content: map['content'],
       color: map['color'],
       dateTime: map['dateTime'],
+      category: map['category'],
     );
   }
 }
