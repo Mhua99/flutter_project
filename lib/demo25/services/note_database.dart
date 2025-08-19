@@ -4,19 +4,6 @@ import "../model/result.dart";
 import "base_database.dart";
 
 class NoteDatabase extends BaseDatabase {
-  Future<void> onCreate(Database db, int version) async {
-
-    await db.execute('''
-      CREATE TABLE notes(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category TEXT,
-        title TEXT,
-        content TEXT,
-        color TEXT,
-        dateTime TEXT
-      )
-    ''');
-  }
 
   Future<int> insertNote(Note note) async {
     final db = await database;
@@ -86,9 +73,14 @@ class NoteDatabase extends BaseDatabase {
     return await db.delete('notes', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> resetNotesTable() async {
+  // 查询指定笔记的分类总数
+  Future<int> getNoteCount(int currentUserId) async {
     final db = await database;
-    await db.execute('DROP TABLE IF EXISTS notes');
-    await onCreate(db, 1);
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM notes WHERE createdUserId = ?',
+      [currentUserId],
+    );
+    print(result.first['count']);
+    return result.first['count'] as int;
   }
 }

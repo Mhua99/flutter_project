@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_project/demo25/screens/views.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
 
-import '../model/notes.dart';
-import '../utils/date.dart';
-import 'note_add_edit.dart';
+import '../../model/notes.dart';
+import '../../utils/date.dart';
+import '../note_add_edit.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>  {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode(); // 创建 FocusNode
 
@@ -205,6 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     margin: EdgeInsets.fromLTRB(100, 0, 100, 16),
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+
                     /// elevation 属性定义了组件相对于其父组件的z轴高度，值越大组件看起来越"浮"在屏幕上，阴影也越明显。
                     elevation: 6,
                   ),

@@ -47,7 +47,7 @@ class BaseDatabase {
 
       return await openDatabase(
         path,
-        version: 1,
+        version: 3,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       );
@@ -58,7 +58,48 @@ class BaseDatabase {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // 基类中留空，由子类实现具体的表创建逻辑
+    /// 创建日记表
+    await db.execute('''
+      CREATE TABLE notes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT,
+        title TEXT,
+        content TEXT,
+        color TEXT,
+        dateTime TEXT,
+        createdUserId INTEGER,
+        createdAt TEXT DEFAULT (datetime('now', 'localtime'))
+      )
+    ''');
+
+    // 创建分类表
+    await db.execute('''
+      CREATE TABLE category(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        createdUserId INTEGER,
+        createdAt TEXT DEFAULT (datetime('now', 'localtime'))
+      )
+    ''');
+
+    /// 床脚用户表
+    await db.execute('''
+      CREATE TABLE users(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        avatar TEXT,
+        email TEXT,
+        createdAt TEXT DEFAULT (datetime('now', 'localtime'))
+      )
+    ''');
+
+    // 插入默认用户数据
+    await db.insert('users', {
+      'username': 'admin',
+      'password': '123456',
+      'avatar': 'assets/demo25/logo1.png',
+    });
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {

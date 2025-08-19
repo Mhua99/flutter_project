@@ -3,30 +3,15 @@ import "../model/user.dart";
 import "base_database.dart";
 
 class UserDatabase extends BaseDatabase {
-  Future<void> onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE users(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        avatar TEXT
-      )
-    ''');
-
-    // 插入默认用户数据
-    await db.insert('users', {
-      'username': 'admin',
-      'password': '123456',
-      'avatar': 'assets/demo25/logo1.png',
-    });
-  }
-
   Future<int> insertUser(User user) async {
     final db = await database;
     return await db.insert('users', user.toMap());
   }
 
-  Future<User?> getUserByUsernameAndPassword(String username, String password) async {
+  Future<User?> getUserByUsernameAndPassword(
+    String username,
+    String password,
+  ) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'users',
@@ -67,5 +52,20 @@ class UserDatabase extends BaseDatabase {
   Future<int> deleteUser(int id) async {
     final db = await database;
     return await db.delete('users', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // 根据用户ID获取单个用户（修正后的方法）
+  Future<User?> getUserById(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return User.fromMap(maps.first);
+    }
+    return null;
   }
 }

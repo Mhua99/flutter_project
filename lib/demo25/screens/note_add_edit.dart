@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_project/demo25/screens/home.dart';
+import 'package:flutter_project/demo25/screens/tabs/home.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
+import 'package:provider/provider.dart';
 
 import '../model/notes.dart';
+import '../provider/global_state.dart';
 
 class AddEditScreen extends StatefulWidget {
   final Note? note;
@@ -56,6 +58,10 @@ class _AddEditScreenState extends State<AddEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final globalState = Provider.of<GlobalState>(context, listen: false);
+    final user = globalState.currentUser;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -163,7 +169,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                   InkWell(
                     onTap: () async {
                       try {
-                        final note = await _saveNote();
+                        final note = await _saveNote(user);
                         Navigator.pop(context, note);
                       } catch (e) {
                         print(e);
@@ -197,7 +203,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
     );
   }
 
-  Future<Note> _saveNote() async {
+  Future<Note> _saveNote(user) async {
     if (_formKey.currentState!.validate()) {
       /// note 对象创建后不应该改变，使用 final 更符合语义
       final note = Note(
@@ -207,6 +213,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
         color: _selectedColor.value.toString(),
         dateTime: DateTime.now().toString(),
         category: _selectedCategory,
+        createdUserId: user.id,
       );
 
       if (widget.note == null) {
