@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_project/demo25/model/user.dart';
+import 'package:flutter_project/demo25/screens/register.dart';
 import 'package:flutter_project/demo25/screens/tab.dart';
 import 'package:flutter_project/demo25/utils/token.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -8,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../provider/global_state.dart';
 import '../services/datebase.dart';
 import './tabs/home.dart';
+import 'forgot_password.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +19,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  /// 添加密码可见性状态
+  bool _isPasswordVisible = false;
+
   final DatabaseHelper _databaseHelper = DatabaseHelper();
 
   // 创建控制器
@@ -27,22 +32,21 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // 设置默认值
+
+    /// 设置默认值
     _usernameController.text = 'admin'; // 默认用户名
     _passwordController.text = '123456'; // 默认密码
   }
 
   @override
   void dispose() {
-    // 释放资源
+    /// 释放资源
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void login() async {
-    String username = _usernameController.text;
-    String password = _passwordController.text;
+  void login(String username, String password) async {
     User? user = await _databaseHelper.getUserByUsernameAndPassword(
       username,
       password,
@@ -57,19 +61,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Fluttertoast.showToast(
         msg: "登录成功",
-        toastLength: Toast.LENGTH_SHORT,
+        // toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.TOP,
         backgroundColor: Colors.blue,
         textColor: Colors.white,
-        fontSize: 16.0,
+        // fontSize: 16.0,
       );
-      // 延迟1秒，再跳转
+      // Fluttertoast.showToast(msg: "个人资料保存成功");
+
+      /// 延迟1秒，再跳转
       await Future.delayed(Duration(seconds: 1));
-      // 登录成功，跳转到主页面并清除所有之前的页面
+
+      /// 登录成功，跳转到主页面并清除所有之前的页面
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => TabsScreen()),
-        (route) => false, // 删除所有之前的页面
+        (route) => false,
+
+        /// 删除所有之前的页面
       );
     } else {
       /// 提示密码错误
@@ -105,17 +114,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   left: 0,
                   right: 0,
                   child: Text(
-                    "欢迎登录，我的记事本",
+                    "欢迎登录，记事本",
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       shadows: [
                         Shadow(
-                          color: Colors.black, // 阴影颜色
-                          offset: Offset(2, 2), // 阴影偏移量 (x, y)
-                          blurRadius: 2, // 阴影模糊半径
+                          color: Colors.black.withOpacity(0.5),
+                          offset: Offset(1, 1),
+                          blurRadius: 1,
                         ),
                       ],
                     ),
@@ -123,26 +132,38 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 Positioned(
                   top: 180,
-                  left: 65,
+                  left: 40,
+                  right: 40,
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       usernameInput(),
                       SizedBox(height: 20),
                       passwordInput(),
-                      SizedBox(height: 55),
+                      SizedBox(height: 40),
                       Container(
-                        width: 300,
+                        width: double.infinity,
                         height: 50,
                         decoration: BoxDecoration(
                           color: Color(0xFF6B75CE),
                           borderRadius: BorderRadius.circular(25),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              spreadRadius: 1,
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
                         ),
                         child: Padding(
-                          padding: EdgeInsets.only(top: 10),
+                          padding: EdgeInsets.only(top: 12),
                           child: GestureDetector(
                             onTap: () {
                               if (_formKey.currentState!.validate()) {
-                                login();
+                                String username = _usernameController.text;
+                                String password = _passwordController.text;
+                                login(username, password);
                               }
                             },
                             child: Text(
@@ -150,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 22,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -158,14 +179,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       SizedBox(height: 20),
-                      Container(
-                        padding: EdgeInsets.only(right: 20),
-                        width: 300,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ForgotPasswordScreen(),
+                            ),
+                          );
+                        },
                         child: Text(
-                          "忘记密码",
+                          "忘记密码？",
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w500,
                             color: Colors.black45,
                           ),
                           textAlign: TextAlign.right,
@@ -176,97 +203,136 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
-            SizedBox(height: 40),
+            SizedBox(height: 30),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 30),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(child: Container(color: Colors.black12, height: 2)),
+                  Expanded(child: Container(color: Colors.black12, height: 1)),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 15),
                     child: Text(
-                      "提示",
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                      "其他登录方式",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                  Expanded(
-                    child: Container(
-                      color: Colors.black12,
-                      width: 100,
-                      height: 2,
-                    ),
-                  ),
+                  Expanded(child: Container(color: Colors.black12, height: 1)),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Container(
-                    width: 177,
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: Colors.lightBlue,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 20),
-                        Icon(Icons.wechat, size: 30, color: Colors.white),
-                        SizedBox(width: 6),
-                        Text(
-                          "微信",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                  InkWell(
+                    onTap: () {
+                      Fluttertoast.showToast(msg: "功能开发中...");
+                    },
+                    child: Container(
+                      width: (MediaQuery.of(context).size.width - 90) / 2,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        color: Colors.lightBlue,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                            offset: Offset(0, 2),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.wechat, size: 24, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            "微信登录",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  Container(
-                    width: 177,
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: Color(0xFF6B75CE),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 20),
-                        Icon(Icons.paypal, size: 30, color: Colors.white),
-                        SizedBox(width: 6),
-                        Text(
-                          "测试",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                  InkWell(
+                    onTap: () {
+                      login('test', '123456');
+                    },
+                    child: Container(
+                      width: (MediaQuery.of(context).size.width - 90) / 2,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        color: Color(0xFF6B75CE),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.account_circle,
+                            size: 24,
                             color: Colors.white,
                           ),
-                        ),
-                      ],
+                          SizedBox(width: 8),
+                          Text(
+                            "游客访问",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: "没有账号？"),
-                  TextSpan(
-                    text: " 立即注册",
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "没有账号？",
+                  style: TextStyle(fontSize: 15, color: Colors.black54),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RegisterScreen()),
+                    );
+                  },
+                  child: Text(
+                    " 立即注册",
                     style: TextStyle(
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF6B75CE),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
@@ -276,43 +342,50 @@ class _LoginScreenState extends State<LoginScreen> {
 
   usernameInput() {
     return Container(
-      width: 300,
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 25),
-            child: Icon(Icons.person_outline, color: Colors.black45),
+            padding: EdgeInsets.only(left: 20, right: 10),
+            child: Icon(Icons.person_outline, color: Colors.black45, size: 22),
           ),
           Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(left: 18, bottom: 3),
-              child: TextFormField(
-                controller: _usernameController,
-                decoration: InputDecoration(
-                  hintText: "请输入用户名",
-                  hintStyle: TextStyle(color: Colors.black45),
-                  border: InputBorder.none,
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '用户名不能为空';
-                  }
-                  if (value.length < 3) {
-                    return '用户名长度不能少于3位';
-                  }
-                  return null;
-                },
+            child: TextFormField(
+              controller: _usernameController,
+              style: TextStyle(fontSize: 16),
+              decoration: InputDecoration(
+                hintText: "请输入用户名",
+                hintStyle: TextStyle(color: Colors.black45, fontSize: 15),
+                border: InputBorder.none,
+
+                /// 设置垂直内边距
+                contentPadding: EdgeInsets.symmetric(vertical: 15),
               ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '用户名不能为空';
+                }
+                if (value.length < 3) {
+                  return '用户名长度不能少于3位';
+                }
+                return null;
+              },
             ),
           ),
-          // Padding(
-          //   padding: EdgeInsets.only(right: 15),
-          //   child: Icon(Icons.check_circle, color: Colors.green),
-          // ),
+          SizedBox(width: 10),
         ],
       ),
     );
@@ -320,38 +393,61 @@ class _LoginScreenState extends State<LoginScreen> {
 
   passwordInput() {
     return Container(
-      width: 300,
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 25),
-            child: Icon(Icons.lock_open_outlined, color: Colors.black45),
+            padding: EdgeInsets.only(left: 20, right: 10),
+            child: Icon(Icons.lock_outline, color: Colors.black45, size: 22),
           ),
           Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(left: 18, bottom: 3),
-              child: TextFormField(
-                controller: _passwordController,
-                decoration: InputDecoration(
-                  hintText: "请输入密码",
-                  hintStyle: TextStyle(color: Colors.black45),
-                  border: InputBorder.none,
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '密码不能为空';
-                  }
-                  if (value.length < 6) {
-                    return '密码长度不能少于6位';
-                  }
-                  return null;
-                },
+            child: TextFormField(
+              obscureText: !_isPasswordVisible,
+              controller: _passwordController,
+              style: TextStyle(fontSize: 16),
+              decoration: InputDecoration(
+                hintText: "请输入密码",
+                hintStyle: TextStyle(color: Colors.black45, fontSize: 15),
+                border: InputBorder.none,
+
+                /// 设置垂直内边距
+                contentPadding: EdgeInsets.symmetric(vertical: 15),
               ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '密码不能为空';
+                }
+                if (value.length < 6) {
+                  return '密码长度不能少于6位';
+                }
+                return null;
+              },
             ),
+          ),
+          IconButton(
+            icon: Icon(
+              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+              color: Colors.grey[600],
+              size: 22,
+            ),
+            onPressed: () {
+              setState(() {
+                _isPasswordVisible = !_isPasswordVisible;
+              });
+            },
           ),
         ],
       ),

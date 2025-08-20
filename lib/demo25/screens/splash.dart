@@ -20,7 +20,6 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _navigationFuture = _checkAndDetermineNextScreen();
-    print("初始化次数");
   }
 
   Future<Widget> _checkAndDetermineNextScreen() async {

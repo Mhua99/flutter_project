@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_project/demo25/model/notes.dart';
-import 'package:flutter_project/demo25/screens/note_add_edit.dart';
+import 'package:flutter_project/demo25/screens/tabs/home/note_add_edit.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
 
-import '../utils/date.dart';
+import '../../../utils/date.dart';
 
 class ViewsPage extends StatefulWidget {
   final Note note;
+  final List<String> categoryList;
 
-  const ViewsPage({super.key, required this.note});
+  const ViewsPage({super.key, required this.note, required this.categoryList});
 
   @override
   State<ViewsPage> createState() => _ViewsPageState();
@@ -41,7 +42,10 @@ class _ViewsPageState extends State<ViewsPage> {
               final res = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddEditScreen(note: _currentNote),
+                  builder: (context) => AddEditScreen(
+                    note: _currentNote,
+                    categoryList: widget.categoryList,
+                  ),
                 ),
               );
               if (res != null) {

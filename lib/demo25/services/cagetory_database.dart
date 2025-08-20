@@ -14,7 +14,6 @@ class CategoryDatabase extends BaseDatabase {
       'category',
       where: 'createdUserId = ?',
       whereArgs: [currentUserId],
-      orderBy: 'createdAt DESC',
     );
 
     return List.generate(maps.length, (i) {
@@ -59,7 +58,7 @@ class CategoryDatabase extends BaseDatabase {
     );
   }
 
-  // 查询指定用户的分类总数
+  /// 查询指定用户的分类总数
   Future<int> getCategoryCount(int currentUserId) async {
     final db = await database;
     final result = await db.rawQuery(

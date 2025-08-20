@@ -29,50 +29,62 @@ class DatabaseHelper {
     String? title,
     required int page,
     int pageSize = 10,
+    required int createdUserId,
   }) => _noteDb.getNotesWithCount(
     category: category,
     title: title,
     page: page,
     pageSize: pageSize,
+    createdUserId: createdUserId,
   );
 
   Future<int> updateNote(Note note) => _noteDb.updateNote(note);
 
   Future<int> deleteNote(int id) => _noteDb.deleteNote(id);
 
-  Future<int> getNoteCount(int currentUserId) => _noteDb.getNoteCount(currentUserId);
+  Future<int> getNoteCount(int currentUserId) =>
+      _noteDb.getNoteCount(currentUserId);
 
   // Future<void> resetNotesTable() => _noteDb.resetNotesTable();
 
-  // Users 相关方法
+  /// Users 相关方法
   /// 插入
   Future<int> insertUser(User user) => _userDb.insertUser(user);
+
   /// 更新
   Future<int> updateUser(User user) => _userDb.updateUser(user);
+
   /// 根据用户名和密码查找 用户
   Future<User?> getUserByUsernameAndPassword(
     String username,
     String password,
   ) => _userDb.getUserByUsernameAndPassword(username, password);
+
   /// 根据用户名查找 用户
   Future<User?> getUserByUsername(String username) =>
       _userDb.getUserByUsername(username);
+
   /// 根据id删除 用户
   Future<int> deleteUser(int id) => _userDb.deleteUser(id);
-  Future<User?> getUserById(int id) => _userDb.getUserById(id);
 
+  /// 根据id查找 用户
+  Future<User?> getUserById(int id) => _userDb.getUserById(id);
 
   /**
    * 分类相关方法
    */
+
   /// 插入
-  Future<int> insertCategory(Category category) => _categoryDb.insertCategory(category);
+  Future<int> insertCategory(Category category) =>
+      _categoryDb.insertCategory(category);
 
   /// 更新
-  Future<int> updateCategory(Category category) => _categoryDb.updateCategory(category);
+  Future<int> updateCategory(Category category) =>
+      _categoryDb.updateCategory(category);
 
   /// 列表
-  Future<List<Category>> getAllCategories(int currentUserId) => _categoryDb.getAllCategories(currentUserId);
+  Future<List<Category>> getAllCategories(int currentUserId) =>
+      _categoryDb.getAllCategories(currentUserId);
 
   /// 根据id删除 分类
   Future<int> deleteCategory(int id) => _categoryDb.deleteCategory(id);
@@ -81,8 +93,8 @@ class DatabaseHelper {
   Future<Category?> getCategoryById(int id) => _categoryDb.getCategoryById(id);
 
   /// 查询指定用户的分类总数
-  Future<int> getCategoryCount(int currentUserId) => _categoryDb.getCategoryCount(currentUserId);
-
+  Future<int> getCategoryCount(int currentUserId) =>
+      _categoryDb.getCategoryCount(currentUserId);
 
   /// 数据库初始化和关闭
   Future<void> initDatabase() async {

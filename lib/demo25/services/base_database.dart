@@ -76,7 +76,7 @@ class BaseDatabase {
     await db.execute('''
       CREATE TABLE category(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
+        name TEXT,
         createdUserId INTEGER,
         createdAt TEXT DEFAULT (datetime('now', 'localtime'))
       )
@@ -94,12 +94,43 @@ class BaseDatabase {
       )
     ''');
 
-    // 插入默认用户数据
-    await db.insert('users', {
+    /// 插入默认用户数据
+    /// 使用批处理插入多条数据
+    Batch batch = db.batch();
+    batch.insert('users', {
       'username': 'admin',
       'password': '123456',
       'avatar': 'assets/demo25/logo1.png',
+      'email': 'admin@example.com',
     });
+    batch.insert('users', {
+      'username': 'test',
+      'password': '123456',
+      'avatar': 'assets/demo25/logo1.png',
+      'email': 'user@example.com',
+    });
+    await batch.commit();
+
+    /// 为已存在的默认用户添加默认分类
+    final users = await db.query('users');
+
+    /// 创建新的批处理对象用于插入分类
+    Batch categoryBatch = db.batch();
+    for (var user in users) {
+      final userId = user['id'] as int;
+
+      /// 为每个用户添加默认分类
+      final defaultCategories = ['vue', 'javascript', 'html', 'total'];
+      for (String categoryName in defaultCategories) {
+        categoryBatch.insert('category', {
+          'name': categoryName,
+          'createdUserId': userId,
+        });
+      }
+    }
+
+    /// 提交分类批处理
+    await categoryBatch.commit(noResult: true);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {

@@ -3,13 +3,14 @@ import 'package:flutter_project/demo25/screens/tabs/home.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
 import 'package:provider/provider.dart';
 
-import '../model/notes.dart';
-import '../provider/global_state.dart';
+import '../../../model/notes.dart';
+import '../../../provider/global_state.dart';
 
 class AddEditScreen extends StatefulWidget {
   final Note? note;
+  final List<String> categoryList;
 
-  const AddEditScreen({super.key, this.note});
+  const AddEditScreen({super.key, this.note, required this.categoryList});
 
   @override
   State<AddEditScreen> createState() => _AddEditScreenState();
@@ -29,9 +30,8 @@ class _AddEditScreenState extends State<AddEditScreen> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   Color _selectedColor = Color(0xFF448AFF);
 
-  // 添加类型字段
-  String _selectedCategory = 'js'; // 默认类型
-  final List<String> _categories = ['js', 'html', 'vue', 'other'];
+  /// 添加类型字段  默认类型
+  String _selectedCategory = 'vue';
 
   final List<Color> _colors = [
     Color(0xFF448AFF),
@@ -61,6 +61,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
 
     final globalState = Provider.of<GlobalState>(context, listen: false);
     final user = globalState.currentUser;
+    final List<String> _categories = widget.categoryList;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -75,6 +76,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
             Padding(
               padding: EdgeInsets.all(16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextFormField(
                     controller: _titleController,
@@ -92,7 +94,9 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     },
                   ),
                   // 添加类型选择区域 - 使用Radio组件
-                  Row(
+                  Wrap(
+                    // spacing: 2, // 主轴间距
+                    // runSpacing: 0, // 交叉轴间距
                     children: _categories.map((category) {
                       return GestureDetector(
                         onTap: () {

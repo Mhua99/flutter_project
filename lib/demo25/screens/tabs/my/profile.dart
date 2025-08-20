@@ -31,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isEditing = false;
 
   /// 添加密码可见性状态
-  bool _isPasswordVisible = false;
+  bool _isPasswordVisible = true;
 
   /// 选择的头像文件
   File? _selectedImage;
@@ -54,7 +54,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("触发");
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -295,8 +294,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ? IconButton(
                       icon: Icon(
                         _isPasswordVisible
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: Colors.grey[600],
                       ),
                       onPressed: () {
@@ -330,6 +329,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // 构建只读信息项
   Widget _buildReadOnlyItem() {
+    String formatDate = widget.userInfo.createdAt != null
+        ? widget.userInfo.createdAt!.split(' ')[0]
+        : '';
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -344,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         SizedBox(width: 10),
         Text(
-          "2023-10-10",
+          formatDate,
           style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           overflow: TextOverflow.ellipsis,
         ),
@@ -354,7 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // 构建保存按钮
   Widget _buildSaveButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 50,
       child: ElevatedButton(

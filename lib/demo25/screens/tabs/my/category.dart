@@ -16,6 +16,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   List<CategoryModal.Category> _categories = [];
   bool _isLoading = true;
+  /// 数据是否有变化
+  bool _hasChanged = false;
 
   @override
   void initState() {
@@ -137,11 +139,10 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         } else {
           await _databaseHelper.updateCategory(currentCategory);
         }
+        _hasChanged = true;
         await _loadCategories();
         Fluttertoast.showToast(msg: isAdd ? "分类添加成功" : "分类修改成功");
       } catch (e) {
-        print(e);
-        print(33333);
         Fluttertoast.showToast(msg: "添加分类失败: 分类可能已存在");
       }
     }
@@ -187,6 +188,14 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         backgroundColor: Colors.blue,
         title: Text("分类管理", style: TextStyle(color: Colors.white)),
         centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // 返回时传递 true 表示有数据变化
+            Navigator.pop(context, _hasChanged);
+            _hasChanged = false;
+          },
+        ),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())

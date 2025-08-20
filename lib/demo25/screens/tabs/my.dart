@@ -16,36 +16,70 @@ class MyScreen extends StatefulWidget {
   const MyScreen({super.key});
 
   @override
-  State<MyScreen> createState() => _MyScreenState();
+  State<MyScreen> createState() => MyScreenState();
 }
 
-class _MyScreenState extends State<MyScreen> {
+class MyScreenState extends State<MyScreen> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   var _userInfo;
   int _categoryCount = 0;
   int _noteCount = 0;
   int _dayCount = 0;
 
+  /// 是否新增编辑了分类数据
+  bool isAddCategory = false;
+
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final globalState = Provider.of<GlobalState>(context, listen: false);
-      setState(() {
-        _userInfo = globalState.currentUser;
-        print(_userInfo.createdAt);
-      });
-      _loadData(_userInfo);
+    /// 使用 Future.microtask 确保在下一帧执行，避免 context 问题
+    /// 在 initState 中直接使用 context 可能导致问题。initState 在 widget 完全构建之前执行，此时 context 可能还没有完全准备好
+    Future.microtask(() async {
+      try {
+        final globalState = Provider.of<GlobalState>(context, listen: false);
+        final currentUser = globalState.currentUser;
+
+        if (currentUser != null) {
+          setState(() {
+            _userInfo = currentUser;
+          });
+          await _loadData(currentUser);
+        }
+      } catch (e) {
+        // 处理可能的异常
+        print('加载用户信息失败: $e');
+      }
     });
   }
 
-  void _loadData(User user) async {
-    _categoryCount = await _databaseHelper.getCategoryCount(user.id!);
-    _noteCount = await _databaseHelper.getNoteCount(user.id!);
-    _dayCount = DateFormat.calculateRegistrationDays(user.createdAt);
+  Future<void> _loadData(User user) async {
+    try {
+      // 并行执行数据库查询以提高性能
+      final results = await Future.wait([
+        _databaseHelper.getCategoryCount(user.id ?? 0),
+        _databaseHelper.getNoteCount(user.id ?? 0),
+      ]);
 
-    setState(() {});
+      final categoryCount = results[0];
+      final noteCount = results[1];
+      final dayCount = DateFormat.calculateRegistrationDays(user.createdAt);
+
+      // 只在数据发生变化时更新UI
+      if (mounted) {
+        setState(() {
+          _categoryCount = categoryCount;
+          _noteCount = noteCount;
+          _dayCount = dayCount;
+        });
+      }
+    } catch (e) {
+      print('加载统计数据失败: $e');
+    }
+  }
+
+  void onPageVisible() {
+    _loadData(_userInfo);
   }
 
   @override
@@ -272,11 +306,12 @@ class _MyScreenState extends State<MyScreen> {
   }
 
   /// 分类
-  void _navigateToCategories() {
-    Navigator.push(
+  void _navigateToCategories() async {
+    final res = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const CategoryListScreen()),
     );
+    isAddCategory = res;
   }
 
   void _navigateToSettings() {

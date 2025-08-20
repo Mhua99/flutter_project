@@ -1,10 +1,8 @@
-import "package:sqflite/sqflite.dart";
 import "../model/notes.dart";
 import "../model/result.dart";
 import "base_database.dart";
 
 class NoteDatabase extends BaseDatabase {
-
   Future<int> insertNote(Note note) async {
     final db = await database;
     return await db.insert('notes', note.toMap());
@@ -21,22 +19,23 @@ class NoteDatabase extends BaseDatabase {
     String? title,
     required int page,
     int pageSize = 10,
+    required int createdUserId,
   }) async {
     final db = await database;
     int offset = (page - 1) * pageSize;
 
-    String? whereClause;
-    List<Object?> whereArgs = [];
+    String? whereClause = 'createdUserId = ? ';
+    List<Object?> whereArgs = [createdUserId];
 
     if (category != null && title != null) {
-      whereClause = 'category = ? AND title LIKE ?';
-      whereArgs = [category, '%$title%'];
+      whereClause += 'And category = ? AND title LIKE ?';
+      whereArgs.addAll([category, '%$title%']);
     } else if (category != null) {
-      whereClause = 'category = ?';
-      whereArgs = [category];
+      whereClause += 'And category = ?';
+      whereArgs.addAll([category]);
     } else if (title != null) {
-      whereClause = 'title LIKE ?';
-      whereArgs = ['%$title%'];
+      whereClause += 'And title LIKE ?';
+      whereArgs.addAll(['%$title%']);
     }
 
     final List<Map<String, dynamic>> maps = await db.query(
@@ -73,14 +72,13 @@ class NoteDatabase extends BaseDatabase {
     return await db.delete('notes', where: 'id = ?', whereArgs: [id]);
   }
 
-  // 查询指定笔记的分类总数
+  /// 查询指定笔记的分类总数
   Future<int> getNoteCount(int currentUserId) async {
     final db = await database;
     final result = await db.rawQuery(
       'SELECT COUNT(*) as count FROM notes WHERE createdUserId = ?',
       [currentUserId],
     );
-    print(result.first['count']);
     return result.first['count'] as int;
   }
 }

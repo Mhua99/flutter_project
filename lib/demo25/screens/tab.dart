@@ -10,30 +10,52 @@ class TabsScreen extends StatefulWidget {
 }
 
 class _TabsScreenState extends State<TabsScreen> {
+  // 创建 GlobalKey 来访问 MyScreen 的状态
+  final GlobalKey<HomeScreenState> _homeScreenKey =
+      GlobalKey<HomeScreenState>();
+  final GlobalKey<MyScreenState> _myScreenKey = GlobalKey<MyScreenState>();
+
   int _currentIndex = 0;
-  final List<Widget> _pages = const [
-    HomeScreen(key: PageStorageKey('home_page')),
-    MyScreen(key: PageStorageKey('my_page')),
+  bool isFirstClickMy = false;
+
+  // 使用 getter 替代直接初始化
+  List<Widget> get _pages => [
+    HomeScreen(key: _homeScreenKey),
+    MyScreen(key: _myScreenKey),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
-        // 选中的颜色
+        /// 选中的颜色
         fixedColor: Colors.blue,
-        // 选中菜单索引
+
+        /// 选中菜单索引
         currentIndex: _currentIndex,
-        // 如果底部有4个或者4个以上的菜单的时候就需要配置这个参数
+
+        /// 如果底部有4个或者4个以上的菜单的时候就需要配置这个参数
         type: BottomNavigationBarType.fixed,
-        // 点击事件
+
+        /// 点击事件
         onTap: (index) {
           setState(() {
             _currentIndex = index;
+
+            /// 当切换到"我的"页面时，调用其方法
+            if (index == 1) {
+              if (isFirstClickMy) {
+                _myScreenKey.currentState?.onPageVisible();
+              } else {
+                isFirstClickMy = true;
+              }
+            } else {
+              if (_myScreenKey.currentState!.isAddCategory) {
+                _myScreenKey.currentState!.isAddCategory = false;
+                _homeScreenKey.currentState?.refreshCategoryList();
+              }
+            }
           });
         },
         items: const [

@@ -11,7 +11,7 @@ class AboutScreen extends StatefulWidget {
 class _AboutScreenState extends State<AboutScreen> {
   // 应用信息
   final Map<String, dynamic> appInfo = {
-    'appName': '我的记事本',
+    'appName': '记事本',
     'version': 'v1.0.0',
     'description': '一款简洁易用的笔记记录应用，帮助您随时随地记录生活点滴。',
     'features': [

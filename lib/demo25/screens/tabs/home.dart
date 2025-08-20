@@ -1,30 +1,33 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_project/demo25/screens/views.dart';
+import 'package:flutter_project/demo25/screens/tabs/home/views.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
+import 'package:provider/provider.dart';
 
 import '../../model/notes.dart';
+import '../../provider/global_state.dart';
 import '../../utils/date.dart';
-import '../note_add_edit.dart';
+import 'home/note_add_edit.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>  {
+class HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode(); // 创建 FocusNode
+  final FocusNode _searchFocusNode = FocusNode();
+  var _userInfo;
 
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   List<Note> _notes = [];
   int _page = 1;
   int _totalCount = 0;
   bool _isLoading = false;
-  final List<String> _spaceCategory = ['全部', 'js', 'html', 'vue', 'other'];
+  List<String> _categoryList = ['全部'];
   int _selectedCategoryIndex = 0;
   bool _isHasMore = true;
 
@@ -35,19 +38,51 @@ class _HomeScreenState extends State<HomeScreen>  {
   @override
   void initState() {
     super.initState();
-    _loadNotes();
+
+    Future.microtask(() async {
+      try {
+        final globalState = Provider.of<GlobalState>(context, listen: false);
+        final currentUser = globalState.currentUser;
+
+        if (currentUser != null) {
+          setState(() {
+            _userInfo = currentUser;
+          });
+          _loadNotes(createdUserId: currentUser.id!);
+          _getCategoryList(currentUser.id!);
+        }
+      } catch (e) {
+        // 处理可能的异常
+        print('加载用户信息失败: $e');
+      }
+    });
   }
 
   @override
   void dispose() {
-    // 释放资源
+    /// 释放资源
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
   }
 
+  void _getCategoryList(int currentUserId) async {
+    final categoryList = await _databaseHelper.getAllCategories(currentUserId);
+    var temp = categoryList.map((category) {
+      return category.name;
+    }).toList();
+    setState(() {
+      _categoryList = ['全部', ...temp];
+    });
+  }
+
+  /// 刷新分类
+  void refreshCategoryList() {
+    _getCategoryList(_userInfo.id);
+  }
+
   /// 查询数据
-  _loadNotes({bool isRefresh = false}) async {
+  _loadNotes({bool isRefresh = false, required int createdUserId}) async {
     setState(() {
       !isRefresh && (_isLoading = true);
     });
@@ -57,9 +92,10 @@ class _HomeScreenState extends State<HomeScreen>  {
       final res = await _databaseHelper.getNotesWithCount(
         category: _selectedCategoryIndex == 0
             ? null
-            : _spaceCategory[_selectedCategoryIndex],
+            : _categoryList[_selectedCategoryIndex],
         title: title == '' ? null : title,
         page: _page,
+        createdUserId: createdUserId,
       );
 
       /// 添加1秒延时后再更新UI
@@ -85,14 +121,14 @@ class _HomeScreenState extends State<HomeScreen>  {
     _page = 1;
     _notes = [];
     _isHasMore = true;
-    await _loadNotes(isRefresh: true);
+    await _loadNotes(isRefresh: true, createdUserId: _userInfo.id);
   }
 
   /// 加载更多数据
   void _loadMoreNotes() {
     if (_isHasMore) {
       _page++;
-      _loadNotes();
+      _loadNotes(createdUserId: _userInfo.id);
     }
   }
 
@@ -101,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen>  {
     _page = 1;
     _notes = [];
     _isHasMore = true;
-    _loadNotes();
+    _loadNotes(createdUserId: _userInfo.id);
   }
 
   @override
@@ -111,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen>  {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.blue,
-        title: Text("我的记事本", style: TextStyle(color: Colors.white)),
+        title: Text("记事本", style: TextStyle(color: Colors.white)),
         centerTitle: true,
       ),
       body: Stack(
@@ -140,13 +176,15 @@ class _HomeScreenState extends State<HomeScreen>  {
         onPressed: () async {
           final res = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (content) => AddEditScreen()),
+            MaterialPageRoute(
+              builder: (content) => AddEditScreen(categoryList: _categoryList.sublist(1)),
+            ),
           );
           if (res is Note) {
             _page = 1;
             _notes = [];
             _isHasMore = true;
-            _loadNotes();
+            _loadNotes(createdUserId: _userInfo.id);
           }
         },
         backgroundColor: Colors.blue,
@@ -254,11 +292,12 @@ class _HomeScreenState extends State<HomeScreen>  {
 
                   final res = await Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => ViewsPage(note: note),
+                      builder: (context) =>
+                          ViewsPage(note: note, categoryList: _categoryList.sublist(1)),
                     ),
                   );
                   if (res == true) {
-                    _loadNotes();
+                    _loadNotes(createdUserId: _userInfo.id);
                   }
                 },
                 child: Container(
@@ -325,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen>  {
       top: 0,
       bottom: 0,
       child: Container(
-        color: Colors.black.withOpacity(0.4), // 稍深一点的背景
+        color: Colors.black.withOpacity(0.1),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -365,7 +404,6 @@ class _HomeScreenState extends State<HomeScreen>  {
               suffixIcon: IconButton(
                 icon: Icon(Icons.search),
                 onPressed: () {
-                  print('点击了搜索图标');
                   _searchNotes();
                 },
               ),
@@ -389,9 +427,10 @@ class _HomeScreenState extends State<HomeScreen>  {
   Widget _getCategory() {
     return SizedBox(
       height: 30,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(_spaceCategory.length, (index) {
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal, // 设置为水平滚动
+        itemCount: _categoryList.length,
+        itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -401,7 +440,11 @@ class _HomeScreenState extends State<HomeScreen>  {
             },
             child: Container(
               height: 40,
-              width: 60,
+              // 移除固定宽度，使用padding来控制间距
+              margin: EdgeInsets.symmetric(horizontal: 5),
+              // 添加水平间距
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              // 添加内边距
               decoration: BoxDecoration(
                 color: _selectedCategoryIndex == index
                     ? Colors.blue
@@ -411,7 +454,7 @@ class _HomeScreenState extends State<HomeScreen>  {
               ),
               child: Center(
                 child: Text(
-                  _spaceCategory[index],
+                  _categoryList[index],
                   style: TextStyle(
                     color: _selectedCategoryIndex == index
                         ? Colors.white
@@ -423,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen>  {
               ),
             ),
           );
-        }),
+        },
       ),
     );
   }
