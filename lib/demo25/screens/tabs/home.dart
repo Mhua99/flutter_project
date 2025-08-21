@@ -52,7 +52,7 @@ class HomeScreenState extends State<HomeScreen> {
           _getCategoryList(currentUser.id!);
         }
       } catch (e) {
-        // 处理可能的异常
+        /// 处理可能的异常
         print('加载用户信息失败: $e');
       }
     });
@@ -118,10 +118,12 @@ class HomeScreenState extends State<HomeScreen> {
 
   /// 下拉刷新方法
   Future<void> _refreshNotes() async {
-    _page = 1;
-    _notes = [];
-    _isHasMore = true;
-    await _loadNotes(isRefresh: true, createdUserId: _userInfo.id);
+    if (_totalCount > 10) {
+      _page = 1;
+      _notes = [];
+      _isHasMore = true;
+      await _loadNotes(isRefresh: true, createdUserId: _userInfo.id);
+    }
   }
 
   /// 加载更多数据
@@ -143,7 +145,7 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      // backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.blue,
@@ -161,7 +163,45 @@ class HomeScreenState extends State<HomeScreen> {
               _getCategory(),
               SizedBox(height: 8),
               if (_notes.isEmpty && !_isLoading)
-                Expanded(child: Center(child: Text('暂无数据')))
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.note_alt_outlined,
+                            size: 40,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                        SizedBox(height: 24),
+                        Text(
+                          '暂无笔记',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          '点击右下角"+"创建新笔记',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               else
                 _getContent(),
               SizedBox(height: 8),
@@ -177,7 +217,8 @@ class HomeScreenState extends State<HomeScreen> {
           final res = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (content) => AddEditScreen(categoryList: _categoryList.sublist(1)),
+              builder: (content) =>
+                  AddEditScreen(categoryList: _categoryList.sublist(1)),
             ),
           );
           if (res is Note) {
@@ -208,7 +249,7 @@ class HomeScreenState extends State<HomeScreen> {
         /// NotificationListener 是一个 Widget，用于监听从子组件树中冒泡上来的通知。它允许你在通知冒泡过程中捕获并处理这些通知
         child: NotificationListener(
           onNotification: (ScrollNotification notification) {
-            // 监听滚动事件，实现上拉加载
+            /// 监听滚动事件，实现上拉加载
             if (notification is ScrollEndNotification) {
               final metrics = notification.metrics;
 
@@ -219,7 +260,7 @@ class HomeScreenState extends State<HomeScreen> {
                 return true;
               } else if (metrics.pixels == metrics.maxScrollExtent &&
                   !_isHasMore) {
-                // 使用 SnackBar 提示
+                /// 使用 SnackBar 提示
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Row(
@@ -229,7 +270,7 @@ class HomeScreenState extends State<HomeScreen> {
                         Text(
                           "数据已全部加载完毕",
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 10,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -253,22 +294,8 @@ class HomeScreenState extends State<HomeScreen> {
             }
             return false;
           },
-          child: GridView.builder(
+          child: ListView.builder(
             padding: EdgeInsets.fromLTRB(16, 4, 16, 16),
-
-            /// 创建了一个2列的网格布局，每个网格项之间有16像素的间距，形成整齐的笔记卡片展示效果。
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              /// 每行显示2列
-              crossAxisCount: 2,
-
-              /// 交叉轴上子元素之间的间距为16像素
-              crossAxisSpacing: 16,
-
-              /// 主轴上子元素之间的间距为16像素
-              mainAxisSpacing: 16,
-            ),
-
-            /// 生成网格数量
             itemCount: _notes.length,
             itemBuilder: (context, index) {
               final note = _notes[index];
@@ -292,8 +319,10 @@ class HomeScreenState extends State<HomeScreen> {
 
                   final res = await Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) =>
-                          ViewsPage(note: note, categoryList: _categoryList.sublist(1)),
+                      builder: (context) => ViewsPage(
+                        note: note,
+                        categoryList: _categoryList.sublist(1),
+                      ),
                     ),
                   );
                   if (res == true) {
@@ -301,52 +330,101 @@ class HomeScreenState extends State<HomeScreen> {
                   }
                 },
                 child: Container(
+                  margin: EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.grey[200] ?? Colors.grey,
+                      width: 1,
+                    ),
                   ),
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        note.title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 标题行 - 左侧小圆点
+                        Row(
+                          children: [
+                            // 颜色小圆点
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            // 标题
+                            Expanded(
+                              child: Text(
+                                note.title,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
-
-                        /// 最多显示一行
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        note.content,
-                        style: TextStyle(fontSize: 14, color: Colors.white70),
-
-                        /// 最多显示四行
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Spacer(),
-                      Text(
-                        DateFormat.formatDateTime(note.dateTime),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                        SizedBox(height: 12),
+                        // 内容预览
+                        Text(
+                          note.content,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.black54,
+                            height: 1.4,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                        SizedBox(height: 16),
+                        // 底部信息
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: Colors.grey[500],
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              DateFormat.formatDateTime(note.dateTime),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.folder_outlined,
+                              size: 14,
+                              color: Colors.grey[500],
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              note.category,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                            // 更多操作按钮
+                            // Icon(
+                            //   Icons.more_horiz,
+                            //   size: 20,
+                            //   color: Colors.grey[400],
+                            // ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -407,12 +485,21 @@ class HomeScreenState extends State<HomeScreen> {
                   _searchNotes();
                 },
               ),
-              border: OutlineInputBorder(
+              // 聚焦时的边框颜色
+              focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+                borderSide: BorderSide(color: Colors.blue, width: 1.5),
+              ),
+              // 未聚焦时的边框颜色
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: Colors.grey[300] ?? Colors.grey,
+                  width: 1,
+                ),
               ),
               filled: true,
-              fillColor: Colors.grey[200],
+              fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 20.0,
                 vertical: 12.0,
@@ -428,7 +515,7 @@ class HomeScreenState extends State<HomeScreen> {
     return SizedBox(
       height: 30,
       child: ListView.builder(
-        scrollDirection: Axis.horizontal, // 设置为水平滚动
+        scrollDirection: Axis.horizontal,
         itemCount: _categoryList.length,
         itemBuilder: (context, index) {
           return GestureDetector(
@@ -440,11 +527,8 @@ class HomeScreenState extends State<HomeScreen> {
             },
             child: Container(
               height: 40,
-              // 移除固定宽度，使用padding来控制间距
               margin: EdgeInsets.symmetric(horizontal: 5),
-              // 添加水平间距
               padding: EdgeInsets.symmetric(horizontal: 15),
-              // 添加内边距
               decoration: BoxDecoration(
                 color: _selectedCategoryIndex == index
                     ? Colors.blue

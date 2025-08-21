@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 
@@ -36,10 +38,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// 选择的头像文件
   File? _selectedImage;
 
+  /// 点击保存的临时路径
+  var _tempAvatorPath;
+
   @override
   void initState() {
     super.initState();
-    // 初始化控制器
+    /// 初始化控制器
     _usernameController.text = widget.userInfo.username;
     _passwordController.text = widget.userInfo.password;
     _emailController.text = widget.userInfo.email ?? '';
@@ -50,6 +55,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  /// 获取头像图片提供器
+  ImageProvider _getAvatarImageProvider() {
+    /// 编辑模式下优先显示选择的图片
+    if (_isEditing && _selectedImage != null) {
+      return FileImage(_selectedImage!);
+    }
+
+    /// 非编辑模式下根据路径类型显示
+    String? avatarPath = _tempAvatorPath ?? widget.userInfo.avatar;
+
+    if (avatarPath == null || avatarPath.isEmpty) {
+      return AssetImage('assets/demo25/logo1.png');
+    }
+
+    /// 判断路径类型
+    if (avatarPath.startsWith('/') || avatarPath.startsWith('file:')) {
+      /// 文件路径
+      try {
+        File file = File(avatarPath);
+        if (file.existsSync()) {
+          return FileImage(file);
+        } else {
+          return AssetImage('assets/demo25/logo1.png');
+        }
+      } catch (e) {
+        return AssetImage('assets/demo25/logo1.png');
+      }
+    } else {
+      /// 资源路径
+      return AssetImage(avatarPath);
+    }
   }
 
   @override
@@ -89,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           key: _formKey,
           child: Column(
             children: [
-              // 头像区域
+              /// 头像区域
               _buildAvatarSection(),
 
               SizedBox(height: 10),
@@ -98,12 +136,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               SizedBox(height: 14),
 
-              // 基本信息区域
+              /// 基本信息区域
               _buildBasicInfoSection(),
 
               SizedBox(height: 15),
 
-              // 账号信息区域
+              /// 账号信息区域
               if (_isEditing) ...[_buildSaveButton()],
             ],
           ),
@@ -118,19 +156,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Stack(
           children: [
-            // 头像
+            /// 头像
             CircleAvatar(
               radius: 60,
-              backgroundImage: _selectedImage != null
-                  ? FileImage(_selectedImage!)
-                  : AssetImage(
-                          widget.userInfo.avatar ?? 'assets/demo25/logo1.png',
-                        )
-                        as ImageProvider,
+              backgroundImage: _getAvatarImageProvider(),
               backgroundColor: Colors.grey[200],
             ),
 
-            // 编辑头像按钮（仅在编辑模式下显示）
+            /// 编辑头像按钮（仅在编辑模式下显示）
             if (_isEditing)
               Positioned(
                 bottom: 0,
@@ -327,12 +360,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // 构建只读信息项
+  /// 构建只读信息项
   Widget _buildReadOnlyItem() {
     String formatDate = widget.userInfo.createdAt != null
         ? widget.userInfo.createdAt!.split(' ')[0]
         : '';
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -355,7 +387,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // 构建保存按钮
+  /// 构建保存按钮
   Widget _buildSaveButton() {
     return SizedBox(
       width: double.infinity,
@@ -387,9 +419,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
       if (image != null) {
+        final appDir = await getApplicationDocumentsDirectory();
+        final fileName = path.basename(image.path);
+        final savedImage = await File(
+          image.path,
+        ).copy('${appDir.path}/$fileName');
+
         setState(() {
-          _selectedImage = File(image.path);
+          _selectedImage = savedImage;
         });
+
         Fluttertoast.showToast(msg: "头像选择成功");
       }
     } catch (e) {
@@ -397,14 +436,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // 保存个人资料
+  /// 保存个人资料
   void _saveProfile() async {
     if (_formKey.currentState!.validate()) {
       User userInfo = User(
         id: widget.userInfo.id,
         username: _usernameController.text,
         password: _passwordController.text,
-        avatar: "assets/demo25/logo1.png",
+        avatar: _selectedImage?.path ?? "assets/demo25/logo1.png",
         email: _emailController.text,
       );
 
@@ -415,6 +454,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         /// 全局保存用户信息
         final globalState = Provider.of<GlobalState>(context, listen: false);
         globalState.setCurrentUser(userInfo);
+        _tempAvatorPath = _selectedImage?.path;
 
         setState(() {
           _isEditing = false;

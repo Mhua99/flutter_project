@@ -1,8 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_project/demo25/screens/tabs/my/profile.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
 import 'package:flutter_project/demo25/utils/token.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/user.dart';
@@ -47,7 +48,7 @@ class MyScreenState extends State<MyScreen> {
           await _loadData(currentUser);
         }
       } catch (e) {
-        // 处理可能的异常
+        /// 处理可能的异常
         print('加载用户信息失败: $e');
       }
     });
@@ -55,7 +56,7 @@ class MyScreenState extends State<MyScreen> {
 
   Future<void> _loadData(User user) async {
     try {
-      // 并行执行数据库查询以提高性能
+      /// 并行执行数据库查询以提高性能
       final results = await Future.wait([
         _databaseHelper.getCategoryCount(user.id ?? 0),
         _databaseHelper.getNoteCount(user.id ?? 0),
@@ -65,7 +66,7 @@ class MyScreenState extends State<MyScreen> {
       final noteCount = results[1];
       final dayCount = DateFormat.calculateRegistrationDays(user.createdAt);
 
-      // 只在数据发生变化时更新UI
+      /// 只在数据发生变化时更新UI
       if (mounted) {
         setState(() {
           _categoryCount = categoryCount;
@@ -84,10 +85,12 @@ class MyScreenState extends State<MyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    /// 每次构建页面时都清除焦点
+    FocusManager.instance.primaryFocus?.unfocus();
+
     if (_userInfo == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -98,18 +101,46 @@ class MyScreenState extends State<MyScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 用户信息区域
+            /// 用户信息区域
             _buildUserInfoSection(_userInfo),
 
-            // 功能列表区域
+            /// 功能列表区域
             _buildFunctionListSection(_userInfo),
 
-            // 退出登录按钮
+            /// 退出登录按钮
             _buildLogoutButton(),
           ],
         ),
       ),
     );
+  }
+
+  /// 获取头像图片提供器
+  ImageProvider _getAvatarImageProvider(userInfo) {
+    String? avatarPath = userInfo.avatar;
+
+    /// 如果没有头像路径，使用默认资源图片
+    if (avatarPath == null || avatarPath.isEmpty) {
+      return AssetImage('assets/demo25/logo1.png');
+    }
+
+    /// 判断路径类型
+    if (avatarPath.startsWith('/') || avatarPath.startsWith('file:')) {
+      /// 文件路径
+      try {
+        File file = File(avatarPath);
+        if (file.existsSync()) {
+          return FileImage(file);
+        } else {
+          return AssetImage('assets/demo25/logo1.png');
+        }
+      } catch (e) {
+        return AssetImage('assets/demo25/logo1.png');
+      }
+    } else {
+      /// 资源路径
+      return AssetImage(avatarPath);
+    }
   }
 
   Widget _buildUserInfoSection(userInfo) {
@@ -133,12 +164,10 @@ class MyScreenState extends State<MyScreen> {
       ),
       child: Column(
         children: [
-          // 头像
+          /// 头像
           CircleAvatar(
             radius: 50,
-            backgroundImage: AssetImage(
-              userInfo.avatar ?? 'assets/demo25/logo1.png',
-            ),
+            backgroundImage: _getAvatarImageProvider(userInfo),
             backgroundColor: Colors.grey[200],
             child: userInfo.avatar == null
                 ? Icon(Icons.person, size: 50, color: Colors.grey[400])
@@ -146,7 +175,7 @@ class MyScreenState extends State<MyScreen> {
           ),
           SizedBox(height: 15),
 
-          // 用户名
+          /// 用户名
           Text(
             userInfo.username ?? '未知用户',
             style: TextStyle(
@@ -157,11 +186,11 @@ class MyScreenState extends State<MyScreen> {
           ),
           SizedBox(height: 5),
 
-          // 用户信息
+          /// 用户信息
           Text('普通用户', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
           SizedBox(height: 15),
 
-          // 统计信息
+          /// 统计信息
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -192,7 +221,7 @@ class MyScreenState extends State<MyScreen> {
     );
   }
 
-  // 构建功能列表区域
+  /// 构建功能列表区域
   Widget _buildFunctionListSection(userInfo) {
     List<Map<String, dynamic>> menuItems = [
       {
@@ -207,12 +236,6 @@ class MyScreenState extends State<MyScreen> {
         'subtitle': '管理笔记分类',
         'onTap': () => _navigateToCategories(),
       },
-      // {
-      //   'icon': Icons.settings_outlined,
-      //   'title': '系统设置',
-      //   'subtitle': '应用设置和偏好',
-      //   'onTap': () => _navigateToSettings(),
-      // },
       {
         'icon': Icons.info_outline,
         'title': '关于我们',
@@ -296,9 +319,12 @@ class MyScreenState extends State<MyScreen> {
     );
   }
 
-  // 导航方法
+  /// 导航方法
   void _navigateToProfile(userInfo) {
-    // 跳转到个人资料页面
+    print(userInfo.email);
+    print("hello world");
+
+    /// 跳转到个人资料页面
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => ProfileScreen(userInfo: userInfo)),
@@ -311,22 +337,16 @@ class MyScreenState extends State<MyScreen> {
       context,
       MaterialPageRoute(builder: (_) => const CategoryListScreen()),
     );
-    isAddCategory = res;
-  }
-
-  void _navigateToSettings() {
-    // 跳转到系统设置页面
-    Fluttertoast.showToast(msg: "跳转到系统设置页面");
+    isAddCategory = res ?? false;
   }
 
   void _navigateToAbout() {
-    // 跳转到关于我们页面
+    /// 跳转到关于我们页面
     Navigator.push(context, MaterialPageRoute(builder: (_) => AboutScreen()));
   }
 
-  // 退出登录
+  /// 退出登录
   void _logout() async {
-    // 显示确认对话框
     bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {

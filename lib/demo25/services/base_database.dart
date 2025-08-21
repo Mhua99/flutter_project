@@ -120,7 +120,7 @@ class BaseDatabase {
       final userId = user['id'] as int;
 
       /// 为每个用户添加默认分类
-      final defaultCategories = ['vue', 'javascript', 'html', 'total'];
+      final defaultCategories = ['vue', 'javascript', 'html', 'other'];
       for (String categoryName in defaultCategories) {
         categoryBatch.insert('category', {
           'name': categoryName,

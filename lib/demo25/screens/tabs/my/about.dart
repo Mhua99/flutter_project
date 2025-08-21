@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -9,7 +8,7 @@ class AboutScreen extends StatefulWidget {
 }
 
 class _AboutScreenState extends State<AboutScreen> {
-  // 应用信息
+  /// 应用信息
   final Map<String, dynamic> appInfo = {
     'appName': '记事本',
     'version': 'v1.0.0',
@@ -75,7 +74,7 @@ class _AboutScreenState extends State<AboutScreen> {
       ),
       child: Column(
         children: [
-          // 应用Logo
+          /// 应用Logo
           Container(
             width: 80,
             height: 80,
@@ -87,7 +86,7 @@ class _AboutScreenState extends State<AboutScreen> {
           ),
           SizedBox(height: 20),
 
-          // 应用名称
+          /// 应用名称
           Text(
             appInfo['appName'],
             style: TextStyle(
@@ -98,14 +97,14 @@ class _AboutScreenState extends State<AboutScreen> {
           ),
           SizedBox(height: 10),
 
-          // 版本号
+          /// 版本号
           Text(
             appInfo['version'],
             style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           SizedBox(height: 15),
 
-          // 应用描述
+          /// 应用描述
           Text(
             appInfo['description'],
             style: TextStyle(

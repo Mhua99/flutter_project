@@ -96,8 +96,7 @@
 <img src="./images/24-1.png" width="30%" style="margin-right:4px" /><img src="./images/24-2.png" width="30%" style="margin-right:4px" />
 
 # dem25
-<img src="./images/25-1.png" width="30%" style="margin-right:4px" /><img src="./images/25-2.png" width="30%" style="margin-right:4px" /><img src="./images/25-3.png" width="30%" style="margin-right:4px" /><img src="./images/25-4.png" width="30%" style="margin-right:4px" /><img src="./images/25-5.png" width="30%" style="margin-right:4px" /><img src="./images/25-6.png" width="30%" style="margin-right:4px" />
-
+<img src="./images/25-1.png" width="30%" style="margin-right:4px" /><img src="./images/25-2.png" width="30%" style="margin-right:4px" /><img src="./images/25-3.png" width="30%" style="margin-right:4px" /><img src="./images/25-7.png" width="30%" style="margin-right:4px" /><img src="./images/25-8.png" width="30%" style="margin-right:4px" /><img src="./images/25-9.png" width="30%" style="margin-right:4px" /><img src="./images/25-4.png" width="30%" style="margin-right:4px" /><img src="./images/25-6.png" width="30%" style="margin-right:4px" /><img src="./images/25-5.png" width="30%" style="margin-right:4px" /><img src="./images/25-6.png" width="30%" style="margin-right:4px" />
 
 # 常见命令
 ```bash

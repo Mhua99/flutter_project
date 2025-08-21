@@ -23,7 +23,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   void initState() {
     super.initState();
 
-    // 在下一帧执行，确保 context 可用
+    /// 在下一帧执行，确保 context 可用
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCategories();
     });
@@ -31,7 +31,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
 
   Future<void> _loadCategories() async {
     try {
-      // 在这里可以安全地使用 Provider
+      /// 在这里可以安全地使用 Provider
       final globalState = Provider.of<GlobalState>(context, listen: false);
       final userInfo = globalState.currentUser;
 
@@ -56,10 +56,10 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     bool isAdd = false,
     CategoryModal.Category? category,
   }) async {
-    final TextEditingController _controller = TextEditingController();
+    final TextEditingController controller = TextEditingController();
 
     if (category != null) {
-      _controller.text = category.name;
+      controller.text = category.name;
     }
 
     final result = await showDialog(
@@ -87,7 +87,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                 Divider(color: Colors.grey[300]),
                 SizedBox(height: 10),
                 TextField(
-                  controller: _controller,
+                  controller: controller,
                   decoration: InputDecoration(
                     hintText: "请输入分类名称",
                     border: OutlineInputBorder(),
@@ -110,8 +110,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                 foregroundColor: MaterialStateProperty.all(Colors.white),
               ),
               onPressed: () {
-                if (_controller.text.trim().isNotEmpty) {
-                  Navigator.of(context).pop(_controller.text.trim());
+                if (controller.text.trim().isNotEmpty) {
+                  Navigator.of(context).pop(controller.text.trim());
                 }
               },
               child: Text("确定"),
@@ -130,7 +130,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
 
         final CategoryModal.Category currentCategory = CategoryModal.Category(
           id: category?.id,
-          name: _controller.text.trim(),
+          name: controller.text.trim(),
           createdUserId: userInfo?.id,
         );
 
@@ -174,6 +174,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         await _databaseHelper.deleteCategory(id);
         await _loadCategories();
         Fluttertoast.showToast(msg: "分类删除成功");
+        _hasChanged = true;
       } catch (e) {
         Fluttertoast.showToast(msg: "删除分类失败");
       }
@@ -191,9 +192,11 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // 返回时传递 true 表示有数据变化
-            Navigator.pop(context, _hasChanged);
+            /// 返回时传递 true 表示有数据变化
+            final temp = _hasChanged;
             _hasChanged = false;
+            Navigator.pop(context, temp);
+
           },
         ),
       ),
