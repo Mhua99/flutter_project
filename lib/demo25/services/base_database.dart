@@ -1,3 +1,6 @@
+import "dart:io";
+
+import "package:flutter_project/demo25/utils/const.dart";
 import "package:path/path.dart";
 import "package:sqflite/sqflite.dart";
 import "package:path_provider/path_provider.dart";
@@ -6,6 +9,7 @@ import "package:path_provider/path_provider.dart";
 class BaseDatabase {
   static final BaseDatabase _instance = BaseDatabase._internal();
   static Database? _database;
+  static Directory? _getBackUpPath;
 
   /// 添加默认构造函数
   BaseDatabase();
@@ -21,6 +25,37 @@ class BaseDatabase {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
+  }
+
+  Future<Directory?> get getBackUpPath async {
+    if (_getBackUpPath != null) return _getBackUpPath;
+    _getBackUpPath = await initBackUpPath();
+    return _getBackUpPath!;
+  }
+
+  /// 初始化备份路径
+  Future<Directory> initBackUpPath() async {
+    Directory? backupDir;
+
+    try {
+      if (Platform.isAndroid) {
+        backupDir = Directory(ConstUtils.backupPath);
+      }
+    } catch (e) {
+      print('无法访问Downloads目录: $e');
+    }
+
+    /// 如果无法访问Downloads目录，回退到应用特定目录
+    if (backupDir == null) {
+      final appDocDir = await getApplicationDocumentsDirectory();
+      backupDir = Directory('${appDocDir.path}/backup');
+    }
+
+    if (!await backupDir.exists()) {
+      await backupDir.create(recursive: true);
+    }
+
+    return backupDir;
   }
 
   Future<Database> _initDatabase() async {
@@ -141,5 +176,68 @@ class BaseDatabase {
     final db = await database;
     await db.close();
     _database = null;
+  }
+
+  Future<String> getDatabasePath() async {
+    final db = await database;
+    return db.path;
+  }
+
+  /// 备份整个数据库文件
+  Future<String> backupDatabase() async {
+    try {
+      final dbPath = await getDatabasePath();
+      final dbFile = File(dbPath);
+
+      if (!await dbFile.exists()) {
+        throw Exception('数据库文件不存在');
+      }
+
+      Directory? backupDir = await getBackUpPath;
+
+      /// 生成备份文件名
+      final now = DateTime.now();
+      final timestamp =
+          "${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}";
+      final fileName = '笔记备份_$timestamp.db';
+      final backupPath = '${backupDir?.path}/$fileName';
+
+      /// 复制数据库文件
+      await dbFile.copy(backupPath);
+
+      print('备份文件已创建: $backupPath');
+      return backupPath;
+    } catch (e) {
+      print('备份数据库失败: $e');
+      throw Exception('备份数据库失败: $e');
+    }
+  }
+
+  Future<void> restoreDatabase(String backupPath) async {
+    try {
+      /// 备份文件路径
+      final backupFile = File(backupPath);
+      if (!await backupFile.exists()) {
+        throw Exception('备份文件不存在');
+      }
+
+      /// 获取数据库路径
+      final appDocDir = await getApplicationDocumentsDirectory();
+      final dbPath = join(appDocDir.path, 'my_note.db');
+
+      /// 关闭当前数据库连接
+      if (_database != null) {
+        await _database!.close();
+        _database = null;
+      }
+
+      /// 用备份文件替换当前数据库
+      await backupFile.copy(dbPath);
+
+      print('数据库恢复成功: $dbPath');
+    } catch (e) {
+      print('恢复数据库失败: $e');
+      throw Exception('恢复数据库失败: $e');
+    }
   }
 }

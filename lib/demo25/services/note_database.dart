@@ -44,7 +44,7 @@ class NoteDatabase extends BaseDatabase {
       whereArgs: whereArgs,
       limit: pageSize,
       offset: offset,
-      orderBy: 'dateTime DESC', // 按日期倒序排列
+      orderBy: 'createdAt DESC', // 按日期倒序排列
     );
 
     final result = await db.rawQuery(

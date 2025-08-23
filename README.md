@@ -112,4 +112,11 @@ Ctrl + Shift + R
 # 自动生成适配各个平台和设备的图标
 * 需要安装 flutter_launcher_icons 包
 flutter pub run flutter_launcher_icons:main
+
+# git 命令
+* 修改上一次提交记录，还没 push 上去的信息
+git commit --amend -m "提交的信息"
+
+* 撤回commit
+git reset --soft HEAD~1
 ```

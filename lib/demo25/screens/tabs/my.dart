@@ -11,6 +11,7 @@ import '../../provider/global_state.dart';
 import '../../utils/date.dart';
 import '../login.dart';
 import 'my/about.dart';
+import 'my/backup.dart';
 import 'my/category.dart';
 
 class MyScreen extends StatefulWidget {
@@ -237,6 +238,12 @@ class MyScreenState extends State<MyScreen> {
         'onTap': () => _navigateToCategories(),
       },
       {
+        'icon': Icons.backup_outlined,
+        'title': '数据备份',
+        'subtitle': '备份和恢复数据',
+        'onTap': () => _navigateToBackup(),
+      },
+      {
         'icon': Icons.info_outline,
         'title': '关于我们',
         'subtitle': '版本信息和应用介绍',
@@ -338,6 +345,11 @@ class MyScreenState extends State<MyScreen> {
       MaterialPageRoute(builder: (_) => const CategoryListScreen()),
     );
     isAddCategory = res ?? false;
+  }
+
+  /// 数据备份
+  void _navigateToBackup() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => BackupScreen()));
   }
 
   void _navigateToAbout() {

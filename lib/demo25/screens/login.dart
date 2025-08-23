@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 
 import '../provider/global_state.dart';
 import '../services/datebase.dart';
-import './tabs/home.dart';
 import 'forgot_password.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -62,9 +61,9 @@ class _LoginScreenState extends State<LoginScreen> {
       Fluttertoast.showToast(
         msg: "登录成功",
         // toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.TOP,
-        backgroundColor: Colors.blue,
-        textColor: Colors.white,
+        // gravity: ToastGravity.TOP,
+        // backgroundColor: Colors.blue,
+        // textColor: Colors.white,
         // fontSize: 16.0,
       );
       // Fluttertoast.showToast(msg: "个人资料保存成功");

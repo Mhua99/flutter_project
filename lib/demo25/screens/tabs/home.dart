@@ -326,6 +326,8 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                   if (res == true) {
+                    _notes = [];
+                    _page = 1;
                     _loadNotes(createdUserId: _userInfo.id);
                   }
                 },
