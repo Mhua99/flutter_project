@@ -21,6 +21,7 @@ class HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   var _userInfo;
+  bool _isTipShow = false;
 
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   List<Note> _notes = [];
@@ -163,45 +164,7 @@ class HomeScreenState extends State<HomeScreen> {
               _getCategory(),
               SizedBox(height: 8),
               if (_notes.isEmpty && !_isLoading)
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.note_alt_outlined,
-                            size: 40,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                        SizedBox(height: 24),
-                        Text(
-                          '暂无笔记',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          '点击右下角"+"创建新笔记',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
+                _buildEmptyState()
               else
                 _getContent(),
               SizedBox(height: 8),
@@ -250,9 +213,11 @@ class HomeScreenState extends State<HomeScreen> {
         child: NotificationListener(
           onNotification: (ScrollNotification notification) {
             /// 监听滚动事件，实现上拉加载
-            if (notification is ScrollEndNotification) {
-              final metrics = notification.metrics;
+            final metrics = notification.metrics;
 
+            /// 只有在滚动到末尾时才处理
+            if (notification is ScrollEndNotification &&
+                metrics.maxScrollExtent > 0) {
               if (metrics.pixels == metrics.maxScrollExtent && _isHasMore) {
                 _loadMoreNotes();
 
@@ -261,6 +226,10 @@ class HomeScreenState extends State<HomeScreen> {
               } else if (metrics.pixels == metrics.maxScrollExtent &&
                   !_isHasMore) {
                 /// 使用 SnackBar 提示
+                if (_isTipShow) {
+                  return true;
+                }
+                _isTipShow = true;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Row(
@@ -289,6 +258,11 @@ class HomeScreenState extends State<HomeScreen> {
                     elevation: 6,
                   ),
                 );
+                Future.delayed(Duration(seconds: 1), () {
+                  if (mounted) {
+                    _isTipShow = false;
+                  }
+                });
                 return true;
               }
             }
@@ -437,29 +411,70 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildLoadingIndicator() {
-    return Positioned(
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      child: Container(
-        color: Colors.black.withOpacity(0.1),
+  Widget _buildEmptyState() {
+    return Expanded(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              strokeWidth: 3.0,
+            /// 空状态图标动画
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.note_alt_outlined,
+                size: 50,
+                color: Colors.grey[400],
+              ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 30),
             Text(
-              '加载中...',
+              '暂无笔记',
               style: TextStyle(
-                color: Colors.white,
+                fontSize: 22,
+                color: Colors.grey[700],
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 12),
+            Text(
+              '点击右下角"+"创建新笔记',
+              style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
+                color: Colors.grey[500],
+              ),
+            ),
+            SizedBox(height: 30),
+            /// 添加一个引导按钮
+            ElevatedButton.icon(
+              onPressed: () async {
+                final res = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (content) =>
+                        AddEditScreen(categoryList: _categoryList.sublist(1)),
+                  ),
+                );
+                if (res is Note) {
+                  _page = 1;
+                  _notes = [];
+                  _isHasMore = true;
+                  _loadNotes(createdUserId: _userInfo.id);
+                }
+              },
+              icon: Icon(Icons.add, size: 20),
+              label: Text('创建第一篇笔记'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
               ),
             ),
           ],
@@ -467,6 +482,91 @@ class HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+
+  Widget _buildLoadingIndicator() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.black.withOpacity(0.7),
+      child: Center(
+        child: Container(
+          padding: EdgeInsets.all(30),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 25,
+                spreadRadius: 5,
+                offset: Offset(0, 15),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 脉冲动画效果的笔记本图标
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  // 脉冲圆圈
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 1500),
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.blue.withOpacity(0.3),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  // 主要图标
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.note_alt,
+                      size: 35,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 25),
+              // 加载文本
+              Text(
+                '正在加载笔记',
+                style: TextStyle(
+                  color: Colors.grey[800],
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 10),
+              // 加载进度条
+              SizedBox(
+                width: 150,
+                child: LinearProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  backgroundColor: Colors.grey[300],
+                  minHeight: 6,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 
   Widget _searchInput() {
     return Padding(

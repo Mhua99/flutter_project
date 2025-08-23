@@ -143,7 +143,6 @@ class MyScreenState extends State<MyScreen> {
       return AssetImage(avatarPath);
     }
   }
-
   Widget _buildUserInfoSection(userInfo) {
     return Container(
       /// double.infinity 表示一个无限大的数值，在 Flutter 中用来表示"尽可能大"或"填充可用空间"。
@@ -165,38 +164,98 @@ class MyScreenState extends State<MyScreen> {
       ),
       child: Column(
         children: [
-          /// 头像
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: _getAvatarImageProvider(userInfo),
-            backgroundColor: Colors.grey[200],
-            child: userInfo.avatar == null
-                ? Icon(Icons.person, size: 50, color: Colors.grey[400])
-                : null,
-          ),
-          SizedBox(height: 15),
+          /// 用户信息区域
+          Row(
+            children: [
+              /// 头像
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.blue.withOpacity(0.3),
+                    width: 2,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundImage: _getAvatarImageProvider(userInfo),
+                  backgroundColor: Colors.grey[200],
+                  child: userInfo.avatar == null
+                      ? Icon(Icons.person, size: 40, color: Colors.grey[400])
+                      : null,
+                ),
+              ),
 
-          /// 用户名
-          Text(
-            userInfo.username ?? '未知用户',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          SizedBox(height: 5),
+              SizedBox(width: 20),
 
-          /// 用户信息
-          Text('普通用户', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-          SizedBox(height: 15),
+              /// 用户基本信息
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// 用户名
+                    Text(
+                      userInfo.username ?? '未知用户',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+
+                    /// 用户信息标签
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.blue.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        '普通用户',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+
+                    /// 邮箱信息
+                    if (userInfo.email != null && userInfo.email.isNotEmpty)
+                      Text(
+                        userInfo.email,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          /// 分隔线
+          Container(
+            height: 1,
+            margin: EdgeInsets.symmetric(vertical: 20),
+            color: Colors.grey[200],
+          ),
 
           /// 统计信息
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildStatItem(_noteCount.toString(), '笔记'),
+              _buildVerticalDivider(),
               _buildStatItem(_categoryCount.toString(), '分类'),
+              _buildVerticalDivider(),
               _buildStatItem(_dayCount.toString(), '注册天数'),
             ],
           ),
@@ -205,20 +264,37 @@ class MyScreenState extends State<MyScreen> {
     );
   }
 
+  /// 构建统计项目
   Widget _buildStatItem(String number, String label) {
     return Column(
       children: [
         Text(
           number,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.blue,
           ),
         ),
-        SizedBox(height: 3),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
+    );
+  }
+
+  /// 垂直分隔线
+  Widget _buildVerticalDivider() {
+    return Container(
+      height: 40,
+      width: 1,
+      color: Colors.grey[300],
     );
   }
 
