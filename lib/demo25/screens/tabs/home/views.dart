@@ -1,14 +1,12 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_project/demo25/model/notes.dart';
 import 'package:flutter_project/demo25/screens/tabs/home/note_add_edit.dart';
 import 'package:flutter_project/demo25/services/datebase.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../../../utils/date.dart';
-import '../../../utils/tts.dart';
 import 'image_edit_preview.dart';
 
 class ViewsPage extends StatefulWidget {
@@ -21,27 +19,113 @@ class ViewsPage extends StatefulWidget {
   State<ViewsPage> createState() => _ViewsPageState();
 }
 
-class _ViewsPageState extends State<ViewsPage> {
+class _ViewsPageState extends State<ViewsPage> with TickerProviderStateMixin {
   late Note _currentNote;
   final DatabaseHelper _databaseHelper = DatabaseHelper();
-  final TtsService ttsService = TtsService();
+  final FlutterTts ttsService = FlutterTts();
   final ScreenshotController _screenshotController = ScreenshotController();
+
+  /// 添加播放状态管理
+  bool _isPlaying = false;
+
+  /// 是否修改了数据
+  bool isModified = false;
+
+  /// 添加循环播放状态
+  bool _isLooping = false;
+  double _speechRate = 1.0;
+  late AnimationController _animationController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-
-    /// 初始化局部变量
     _currentNote = widget.note;
+
+    /// 初始化动画控制器
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    /// 监听TTS完成事件，实现循环播放
+    ttsService.setCompletionHandler(() {
+      if (_isLooping) {
+        /// 如果是循环播放状态，重新开始播放
+        _isPlaying = false;
+        _toggleSpeak();
+      } else if (_isPlaying) {
+        /// 如果不是循环播放，停止播放状态
+        setState(() {
+          _isPlaying = false;
+        });
+        _animationController.stop();
+      }
+    });
   }
 
   @override
-  dispose() {
+  void dispose() {
+    _animationController.dispose();
+    ttsService.stop();
     super.dispose();
   }
 
-  void speak() {
-    ttsService.speak(widget.note.content);
+  /// 切换音速度
+  void _toggleSpeechRate() {
+    setState(() {
+      if (_speechRate == 1.0) {
+        _speechRate = 1.5;
+      } else if (_speechRate == 1.5) {
+        _speechRate = 2.0;
+      } else if (_speechRate == 2.0) {
+        _speechRate = 2.5;
+      } else if (_speechRate == 2.5) {
+        _speechRate = 3.0;
+      } else {
+        _speechRate = 1.0;
+      }
+    });
+
+    /// 如果正在播放，更新语速
+    if (_isPlaying) {
+      ttsService.setSpeechRate(_speechRate);
+
+      /// 重新开始播放以应用新的语速
+      ttsService.stop();
+      ttsService.speak(widget.note.content);
+    }
+  }
+
+  /// 播放/暂停文本
+  void _toggleSpeak() async {
+    if (_isPlaying) {
+      // 正在播放，点击停止
+      ttsService.stop();
+      setState(() {
+        _isPlaying = false;
+      });
+      _animationController.stop();
+    } else {
+      /// 未播放，开始播放
+      ttsService.setSpeechRate(_speechRate);
+      ttsService.speak(widget.note.content);
+      setState(() {
+        _isPlaying = true;
+      });
+      _animationController.repeat(reverse: true);
+    }
+  }
+
+  /// 切换循环播放状态
+  void _toggleLoop() {
+    setState(() {
+      _isLooping = !_isLooping;
+    });
   }
 
   /// 分享为文本
@@ -51,7 +135,6 @@ class _ViewsPageState extends State<ViewsPage> {
 
   void _shareAsImage() async {
     try {
-      /// 直接跳转到图片编辑预览页面，传递笔记数据
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -161,52 +244,114 @@ class _ViewsPageState extends State<ViewsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(int.parse(_currentNote.color)),
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        // 处理返回逻辑
+        Navigator.pop(context, isModified);
+        return false; // 阻止默认的返回行为
+      },
+      child: Scaffold(
         backgroundColor: Color(int.parse(_currentNote.color)),
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () => speak(), // 添加阅读功能按钮
-            icon: Icon(Icons.volume_up, color: Colors.white),
+        appBar: AppBar(
+          backgroundColor: Color(int.parse(_currentNote.color)),
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context, isModified),
+            icon: Icon(Icons.arrow_back, color: Colors.white),
           ),
-          IconButton(
-            onPressed: () => _showShareOptions(), // 分享按钮
-            icon: Icon(Icons.share, color: Colors.white),
-          ),
-          IconButton(
-            onPressed: () async {
-              final res = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddEditScreen(
-                    note: _currentNote,
-                    categoryList: widget.categoryList,
-                  ),
+          actions: [
+            // 循环播放按钮
+            IconButton(
+              onPressed: _toggleLoop,
+              icon: Icon(
+                _isLooping ? Icons.repeat_one : Icons.repeat_one_outlined,
+                color: _isLooping ? Colors.green : Colors.white,
+              ),
+              tooltip: _isLooping ? "关闭循环播放" : "开启循环播放",
+            ),
+            // 播放按钮
+            IconButton(
+              onPressed: () => _toggleSpeak(),
+              icon: AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _isPlaying ? _pulseAnimation.value : 1.0,
+                    child: Icon(
+                      _isPlaying ? Icons.stop : Icons.volume_up,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              ),
+            ),
+            // 音速度按钮
+            GestureDetector(
+              onTap: _toggleSpeechRate,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                margin: EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              );
-              if (res != null) {
-                setState(() {
-                  _currentNote = res;
-                });
-              }
-            },
-            icon: Icon(Icons.edit, color: Colors.white),
-          ),
-          IconButton(
-            onPressed: () => _deleteNote(context),
-            icon: Icon(Icons.delete, color: Colors.white),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Screenshot(
-          controller: _screenshotController,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.speed, color: Colors.white, size: 18),
+                    SizedBox(width: 4),
+                    Text(
+                      _speechRate.toString(),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () => _showShareOptions(),
+              icon: Icon(Icons.share, color: Colors.white),
+            ),
+            IconButton(
+              onPressed: () async {
+                final res = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddEditScreen(
+                      note: _currentNote,
+                      categoryList: widget.categoryList,
+                    ),
+                  ),
+                );
+                if (res != null) {
+                  setState(() {
+                    _currentNote = res;
+                  });
+
+                  isModified = true;
+                  // 如果正在播放，停止播放
+                  if (_isPlaying) {
+                    ttsService.stop();
+                    setState(() {
+                      _isPlaying = false;
+                    });
+                    _animationController.stop();
+                  }
+                }
+              },
+              icon: Icon(Icons.edit, color: Colors.white),
+            ),
+            IconButton(
+              onPressed: () => _deleteNote(context),
+              icon: Icon(Icons.delete, color: Colors.white),
+            ),
+          ],
+        ),
+        body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -290,6 +435,15 @@ class _ViewsPageState extends State<ViewsPage> {
   }
 
   Future<void> _deleteNote(BuildContext context) async {
+    // 如果正在播放，先停止
+    if (_isPlaying) {
+      ttsService.stop();
+      setState(() {
+        _isPlaying = false;
+      });
+      _animationController.stop();
+    }
+
     final confirm = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
